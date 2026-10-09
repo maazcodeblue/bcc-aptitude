@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>BCC Admin</title>
+<style>
+  :root{--bg:#eef0f3;--surface:#fff;--surface2:#f7f8fa;--ink:#121820;--muted:#5c6675;--line:#e0e4ea;--accent:#0e7c74;--accent-weak:#e2f1ef;--good:#1f7a43;--bad:#c02626;--warn:#b45309}
+  @media (prefers-color-scheme:dark){:root{--bg:#0d1117;--surface:#161b22;--surface2:#1c222b;--ink:#e8ebef;--muted:#9aa4b2;--line:#262d38;--accent:#2dd4bf;--accent-weak:#13302d;--good:#34d399;--bad:#f87171;--warn:#f59e0b}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+  .hidden{display:none!important}
+  button,input,select{font:inherit}
+  input,select{padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}
+  input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px}
+  .btn{padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;font-weight:500}
+  .btn:hover{background:var(--surface2)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  @media (prefers-color-scheme:dark){.btn.primary{color:#0d1117}}
+  .btn:disabled{opacity:.5;cursor:wait}
+
+  /* login */
+  #login{min-height:100vh;display:grid;place-items:center;padding:16px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:28px;width:100%;max-width:380px;box-shadow:0 8px 28px rgba(0,0,0,.07)}
+  .card h1{margin:0 0 4px;font-size:1.4rem}
+  .card p{margin:0 0 20px;color:var(--muted)}
+  .card label{display:block;font-size:.85rem;font-weight:500;margin:14px 0 6px}
+  .card input{width:100%}
+  .err{color:var(--bad);font-size:.88rem;margin-top:12px;min-height:1.2em}
+
+  /* app */
+  header{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--line);padding:12px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  header b{font-size:1.05rem}
+  header .sp{flex:1}
+  main{max-width:1200px;margin:0 auto;padding:20px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .stat b{display:block;font-size:1.6rem;letter-spacing:-.02em}
+  .stat span{color:var(--muted);font-size:.82rem}
+  .tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .tools input{flex:1;min-width:180px}
+  .tablewrap{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow-x:auto}
+  table{width:100%;border-collapse:collapse;min-width:760px}
+  th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+  th{background:var(--surface2);font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;cursor:pointer;user-select:none}
+  tr.row{cursor:pointer}
+  tr.row:hover td{background:var(--surface2)}
+  tr:last-child td{border-bottom:0}
+  .pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:.78rem;font-weight:600;background:var(--accent-weak);color:var(--accent)}
+  .pass{color:var(--good);font-weight:600}.fail{color:var(--bad);font-weight:600}
+  .empty{padding:40px;text-align:center;color:var(--muted)}
+  .detail td{background:var(--surface2);white-space:normal;padding:16px 20px}
+  .ans{display:grid;gap:6px;margin-top:8px}
+  .a{display:flex;gap:10px;font-size:.88rem}
+  .a i{font-style:normal;font-weight:700;flex:0 0 1.4em}
+  .a .ok{color:var(--good)}.a .no{color:var(--bad)}
+  .a small{color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <form class="card" id="loginForm">
+    <h1>BCC Admin</h1>
+    <p>Sign in to view submissions.</p>
+    <label for="email">Email</label>
+    <input id="email" type="email" autocomplete="username" required>
+    <label for="pw">Password</label>
+    <input id="pw" type="password" autocomplete="current-password" required>
+    <div class="err" id="loginErr"></div>
+    <button class="btn primary" style="width:100%;margin-top:8px" id="loginBtn">Sign in</button>
+  </form>
+</div>
+
+<div id="app" class="hidden">
+  <header>
+    <b>BCC Submissions</b>
+    <span class="sp"></span>
+    <button class="btn" id="refreshBtn">Refresh</button>
+    <button class="btn" id="csvBtn">Export CSV</button>
+    <button class="btn" id="logoutBtn">Sign out</button>
+  </header>
+  <main>
+    <div class="stats" id="stats"></div>
+    <div class="tools">
+      <input id="search" type="search" placeholder="Search name, email or ID…">
+      <select id="testFilter">
+        <option value="">All tests</option>
+        <option value="aptitude">Aptitude</option>
+        <option value="bluecascade">BlueCascade</option>
+      </select>
+      <select id="passFilter">
+        <option value="">Any result</option>
+        <option value="pass">Passed</option>
+        <option value="fail">Not passed</option>
+      </select>
+    </div>
+    <div class="tablewrap"><table>
+      <thead><tr>
+        <th data-k="created_at">Date</th><th data-k="candidate_name">Name</th><th data-k="candidate_email">Email</th>
+        <th data-k="test">Test</th><th data-k="score">Score</th><th data-k="passed">Result</th>
+        <th data-k="tab_switches">Tab switches</th><th data-k="duration_sec">Time</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table></div>
+  </main>
+</div>
+
+<script>
+"use strict";
+const SUPABASE_URL = "https://bjwyunkxrgqcmtuyywvh.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqd3l1bmt4cmdxY210dXl5d3ZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE1MjQ2MTQsImV4cCI6MjEwNzEwMDYxNH0.ww00QTg5hqE0kVnqcq-cs8w3vKf2GImb6_8ymzDYtDo";
+const TOKEN_KEY = "bcc_admin_token";
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let token = null, data = [], sortKey = "created_at", sortDir = -1, open = null;
+
+try{ token = sessionStorage.getItem(TOKEN_KEY); }catch(e){}
+
+function fmtDur(s){ if(s==null) return "—"; return Math.floor(s/60)+"m "+String(s%60).padStart(2,"0")+"s"; }
+function fmtDate(d){ return new Date(d).toLocaleString([], {dateStyle:"medium", timeStyle:"short"}); }
+
+/* ---------- auth ---------- */
+async function signIn(email, password){
+  const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+    method:"POST",
+    headers:{apikey:SUPABASE_KEY, "Content-Type":"application/json"},
+    body:JSON.stringify({email, password})
+  });
+  if(!r.ok) throw new Error("Invalid email or password.");
+  return (await r.json()).access_token;
+}
+function signOut(){
+  token = null; data = [];
+  try{ sessionStorage.removeItem(TOKEN_KEY); }catch(e){}
+  $("app").classList.add("hidden"); $("login").classList.remove("hidden");
+  $("pw").value = "";
+}
+
+$("loginForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  $("loginErr").textContent = ""; $("loginBtn").disabled = true;
+  try{
+    token = await signIn($("email").value.trim(), $("pw").value);
+    try{ sessionStorage.setItem(TOKEN_KEY, token); }catch(e){}
+    await showApp();
+  }catch(err){ $("loginErr").textContent = err.message; }
+  $("loginBtn").disabled = false;
+});
+$("logoutBtn").onclick = signOut;
+
+/* ---------- data ---------- */
+async function load(){
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/submissions?select=*&order=created_at.desc&limit=1000`, {
+    headers:{apikey:SUPABASE_KEY, Authorization:`Bearer ${token}`}
+  });
+  if(r.status===401 || r.status===403){ signOut(); $("loginErr").textContent = "Session expired. Sign in again."; return; }
+  if(!r.ok){ $("rows").innerHTML = `<tr><td colspan="8" class="empty">Could not load data (${r.status}).</td></tr>`; return; }
+  data = await r.json();
+  render();
+}
+async function showApp(){
+  $("login").classList.add("hidden"); $("app").classList.remove("hidden");
+  await load();
+}
+
+/* ---------- render ---------- */
+function filtered(){
+  const q = $("search").value.trim().toLowerCase(), t = $("testFilter").value, p = $("passFilter").value;
+  return data.filter(d => {
+    if(t && d.test !== t) return false;
+    if(p==="pass" && !isPass(d)) return false;
+    if(p==="fail" && isPass(d)) return false;
+    if(q && !`${d.candidate_name} ${d.candidate_email} ${d.candidate_id}`.toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+const isPass = d => d.passed === true || (d.passed == null && d.score >= 60);
+
+function render(){
+  const rows = filtered().sort((a,b)=>{
+    const x=a[sortKey], y=b[sortKey];
+    return (x==null?-1:y==null?1:x>y?1:x<y?-1:0)*sortDir;
+  });
+  const avg = rows.length ? Math.round(rows.reduce((s,d)=>s+(d.score||0),0)/rows.length) : 0;
+  const passRate = rows.length ? Math.round(rows.filter(isPass).length/rows.length*100) : 0;
+  $("stats").innerHTML = `
+    <div class="stat"><b>${rows.length}</b><span>Submissions</span></div>
+    <div class="stat"><b>${avg}%</b><span>Average score</span></div>
+    <div class="stat"><b>${passRate}%</b><span>Pass rate (60%+)</span></div>
+    <div class="stat"><b>${rows.filter(d=>d.test==="aptitude").length} / ${rows.filter(d=>d.test==="bluecascade").length}</b><span>Aptitude / BlueCascade</span></div>`;
+
+  if(!rows.length){ $("rows").innerHTML = `<tr><td colspan="8" class="empty">No submissions yet.</td></tr>`; return; }
+  $("rows").innerHTML = rows.map(d => {
+    const pass = isPass(d);
+    let html = `<tr class="row" data-id="${esc(d.id)}">
+      <td>${esc(fmtDate(d.created_at))}</td><td>${esc(d.candidate_name)}</td><td>${esc(d.candidate_email)}</td>
+      <td><span class="pill">${esc(d.test)}</span></td>
+      <td><b>${esc(d.score)}%</b> <small style="color:var(--muted)">${esc(d.points)}/${esc(d.total)}</small></td>
+      <td class="${pass?"pass":"fail"}">${pass?"Passed":"Not passed"}</td>
+      <td>${d.tab_switches==null?"—":esc(d.tab_switches)}</td><td>${fmtDur(d.duration_sec)}</td></tr>`;
+    if(open===d.id){
+      const items = Array.isArray(d.answers) ? d.answers : [];
+      html += `<tr class="detail"><td colspan="8">
+        <small>ID: ${esc(d.candidate_id||"—")} · Invite code: ${esc(d.invite_code||"—")}</small>
+        <div class="ans">${items.map((a,i)=>`<div class="a"><i class="${a.correct?"ok":"no"}">${a.correct?"✓":"✕"}</i>
+          <span>${i+1}. ${esc(a.question)} <small>[${esc(a.section)}] — answer: ${esc(JSON.stringify(a.response))}</small></span></div>`).join("") || "<small>No answer detail.</small>"}</div>
+      </td></tr>`;
+    }
+    return html;
+  }).join("");
+}
+
+$("rows").addEventListener("click", e => {
+  const tr = e.target.closest("tr.row"); if(!tr) return;
+  open = open === tr.dataset.id ? null : tr.dataset.id; render();
+});
+document.querySelectorAll("th[data-k]").forEach(th => th.onclick = () => {
+  const k = th.dataset.k; sortDir = sortKey===k ? -sortDir : -1; sortKey = k; render();
+});
+["search","testFilter","passFilter"].forEach(id => $(id).addEventListener("input", render));
+$("refreshBtn").onclick = load;
+
+/* ---------- CSV ---------- */
+$("csvBtn").onclick = () => {
+  const cols = ["created_at","test","candidate_id","candidate_name","candidate_email","invite_code","score","points","total","passed","tab_switches","duration_sec"];
+  // prefix cells that start with a formula character so spreadsheets don't execute them
+  const cell = v => { let s = v==null ? "" : String(v); if(/^[=+\-@\t\r]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g,'""') + '"'; };
+  const csv = [cols.join(",")].concat(filtered().map(d => cols.map(c => cell(d[c])).join(","))).join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], {type:"text/csv"}));
+  a.download = "submissions.csv"; a.click(); URL.revokeObjectURL(a.href);
+};
+
+if(token) showApp();
+</script>
+</body>
+</html>
