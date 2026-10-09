@@ -1,0 +1,6 @@
+{
+  "name": "bcc-aptitude",
+  "compatibility_date": "2026-01-01",
+  "workers_dev": true,
+  "assets": { "directory": "./aptitude" }
+}
