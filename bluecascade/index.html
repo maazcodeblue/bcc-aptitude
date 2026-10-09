@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BlueCascade Assessments</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0A1A2F; --muted:#5B6B82; --faint:#8696ad;
+  --bg:#EAF1F9; --surface:#FFFFFF; --surface-2:#F4F8FC; --surface-3:#EBF1F8;
+  --border:#D8E2EF; --border-strong:#C3D2E5;
+  --primary:#1D5BE0; --primary-600:#174FC7; --primary-ink:#FFFFFF; --primary-wash:#E7EFFD;
+  --accent:#06B6D4; --accent-wash:#DBF5FA;
+  --deep-a:#0A2452; --deep-b:#1D5BE0; --deep-c:#07A9C4;
+  --success:#12855A; --success-wash:#E1F5EC;
+  --danger:#D23F3F; --danger-wash:#FBE8E8;
+  --warn:#B4740A; --warn-wash:#FCF0DC;
+  --flag:#C2690A;
+  --shadow:0 1px 2px rgba(10,26,47,.06), 0 8px 24px rgba(10,26,47,.07);
+  --shadow-lg:0 12px 48px rgba(10,26,47,.16);
+  --radius:14px; --radius-sm:10px;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#E7EEF8; --muted:#93A4BC; --faint:#6E809A;
+    --bg:#060D18; --surface:#0E1A2C; --surface-2:#132339; --surface-3:#182B45;
+    --border:#243750; --border-strong:#31486593;
+    --primary:#4C85F5; --primary-600:#3B74E8; --primary-ink:#06142B; --primary-wash:#132a4f;
+    --accent:#2BD4EC; --accent-wash:#0e2d3a;
+    --deep-a:#071A3B; --deep-b:#14407f; --deep-c:#0a7f96;
+    --success:#2BB477; --success-wash:#0e2e23;
+    --danger:#F0686A; --danger-wash:#2e1414;
+    --warn:#E0A33A; --warn-wash:#2d2110;
+    --flag:#E0A33A;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.4);
+    --shadow-lg:0 16px 54px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#E7EEF8; --muted:#93A4BC; --faint:#6E809A;
+  --bg:#060D18; --surface:#0E1A2C; --surface-2:#132339; --surface-3:#182B45;
+  --border:#243750; --border-strong:#314865;
+  --primary:#4C85F5; --primary-600:#3B74E8; --primary-ink:#06142B; --primary-wash:#132a4f;
+  --accent:#2BD4EC; --accent-wash:#0e2d3a;
+  --deep-a:#071A3B; --deep-b:#14407f; --deep-c:#0a7f96;
+  --success:#2BB477; --success-wash:#0e2e23;
+  --danger:#F0686A; --danger-wash:#2e1414;
+  --warn:#E0A33A; --warn-wash:#2d2110; --flag:#E0A33A;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.4);
+  --shadow-lg:0 16px 54px rgba(0,0,0,.6);
+}
+*{box-sizing:inherit; margin:0; padding:0}
+html{scroll-padding-top:env(safe-area-inset-top,0px); -webkit-text-size-adjust:100%}
+body{
+  font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  background:var(--bg); color:var(--ink);
+  line-height:1.5; min-height:100dvh;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,.disp{font-family:"Space Grotesk",Inter,sans-serif; letter-spacing:-.01em}
+button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit}
+input,label{font-family:inherit}
+.mono-num{font-family:"Space Grotesk",monospace; font-variant-numeric:tabular-nums}
+
+/* ---------- App shell ---------- */
+.app{max-width:1180px; margin:0 auto; padding:0 18px}
+.screen{min-height:100dvh; display:flex; flex-direction:column}
+.fade{animation:fade .4s ease both}
+@keyframes fade{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){.fade{animation:none}}
+
+/* ---------- Top brand bar ---------- */
+.topbar{display:flex; align-items:center; justify-content:space-between; gap:14px;
+  padding:14px 18px; max-width:1180px; margin:0 auto; width:100%}
+.brand{display:flex; align-items:center; gap:11px; font-family:"Space Grotesk"; font-weight:700; font-size:18px}
+.brand .mark{width:30px; height:30px; border-radius:9px; flex:none;
+  background:linear-gradient(155deg,var(--deep-a),var(--deep-b) 55%,var(--deep-c));
+  position:relative; box-shadow:0 2px 8px rgba(29,91,224,.35)}
+.brand .mark::before,.brand .mark::after{content:""; position:absolute; left:14%; right:14%; height:2.4px;
+  border-radius:3px; background:rgba(255,255,255,.9)}
+.brand .mark::before{top:38%; box-shadow:0 5px 0 rgba(255,255,255,.55)}
+.brand .mark::after{top:64%; background:rgba(255,255,255,.4)}
+.brand small{display:block; font-family:Inter; font-weight:500; font-size:11px; color:var(--muted); letter-spacing:.02em; margin-top:-2px}
+.topbar .right{display:flex; align-items:center; gap:10px}
+.theme-btn{width:38px; height:38px; border-radius:10px; border:1px solid var(--border);
+  background:var(--surface); display:grid; place-items:center; font-size:16px; transition:.15s}
+.theme-btn:hover{border-color:var(--border-strong)}
+
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  padding:12px 20px; border-radius:11px; font-weight:600; font-size:15px; transition:.15s;
+  border:1px solid transparent; white-space:nowrap}
+.btn:focus-visible{outline:2px solid var(--primary); outline-offset:2px}
+.btn-primary{background:var(--primary); color:var(--primary-ink); box-shadow:0 4px 14px rgba(29,91,224,.28)}
+.btn-primary:hover{background:var(--primary-600)}
+.btn-primary:disabled{opacity:.5; cursor:not-allowed; box-shadow:none}
+.btn-ghost{background:var(--surface); border-color:var(--border); color:var(--ink)}
+.btn-ghost:hover{border-color:var(--border-strong); background:var(--surface-2)}
+.btn-soft{background:var(--surface-3); color:var(--ink)}
+.btn-soft:hover{background:var(--border)}
+.btn-danger{background:var(--danger); color:#fff}
+.btn-lg{padding:14px 26px; font-size:16px}
+.btn-sm{padding:9px 14px; font-size:14px}
+
+/* ---------- LOGIN ---------- */
+.login-wrap{flex:1; display:grid; grid-template-columns:1.05fr 1fr; gap:0; align-items:stretch;
+  max-width:1060px; margin:10px auto 40px; width:100%; padding:0 18px}
+.login-hero{border-radius:20px 0 0 20px; padding:46px 42px; color:#fff; position:relative; overflow:hidden;
+  background:linear-gradient(158deg,var(--deep-a),var(--deep-b) 52%,var(--deep-c));
+  display:flex; flex-direction:column}
+.login-hero::after{content:""; position:absolute; inset:0; pointer-events:none;
+  background:
+   radial-gradient(130% 80% at 85% -10%, rgba(255,255,255,.22), transparent 55%),
+   repeating-linear-gradient(115deg, rgba(255,255,255,.05) 0 2px, transparent 2px 26px)}
+.login-hero .eyebrow{position:relative; font-size:13px; font-weight:600; color:#bfe4f5; margin-bottom:14px}
+.login-hero h1{position:relative; font-size:clamp(28px,3.4vw,40px); line-height:1.05; font-weight:700; max-width:16ch}
+.login-hero p{position:relative; margin-top:16px; color:#d6e6f5; max-width:34ch; font-size:15px}
+.hero-stats{position:relative; margin-top:auto; padding-top:30px; display:flex; gap:28px; flex-wrap:wrap}
+.hero-stats .s b{display:block; font-family:"Space Grotesk"; font-size:26px; font-weight:700}
+.hero-stats .s span{font-size:12.5px; color:#bcd4ea}
+.login-card{background:var(--surface); border:1px solid var(--border); border-left:none;
+  border-radius:0 20px 20px 0; padding:40px 38px; box-shadow:var(--shadow); display:flex; flex-direction:column; justify-content:center}
+.login-card h2{font-size:23px; font-weight:600}
+.login-card .sub{color:var(--muted); font-size:14px; margin-top:5px; margin-bottom:24px}
+.field{margin-bottom:16px}
+.field label{display:block; font-size:13px; font-weight:600; margin-bottom:7px; color:var(--ink)}
+.field input{width:100%; padding:12px 14px; border-radius:11px; border:1px solid var(--border);
+  background:var(--surface-2); color:var(--ink); font-size:15px; transition:.15s}
+.field input::placeholder{color:var(--faint)}
+.field input:focus{outline:none; border-color:var(--primary); background:var(--surface); box-shadow:0 0 0 3px var(--primary-wash)}
+.field .err{color:var(--danger); font-size:12.5px; margin-top:6px; display:none}
+.field.invalid input{border-color:var(--danger)}
+.field.invalid .err{display:block}
+.consent{display:flex; gap:10px; align-items:flex-start; margin:6px 0 22px; font-size:13.5px; color:var(--muted)}
+.consent input{margin-top:3px; width:17px; height:17px; accent-color:var(--primary); flex:none}
+.login-foot{margin-top:18px; font-size:12.5px; color:var(--faint); text-align:center}
+
+/* ---------- Generic card / instructions ---------- */
+.card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow)}
+.center-narrow{max-width:760px; margin:8px auto 48px; width:100%; padding:0 18px; flex:1}
+.inst-head{display:flex; align-items:center; gap:16px; padding:26px 30px; border-bottom:1px solid var(--border)}
+.inst-head .ic{width:50px; height:50px; border-radius:13px; flex:none; display:grid; place-items:center; font-size:24px;
+  background:var(--primary-wash); color:var(--primary)}
+.inst-head h2{font-size:22px} .inst-head p{color:var(--muted); font-size:14px; margin-top:2px}
+.meta-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--border)}
+.meta-grid .m{background:var(--surface); padding:18px 20px; text-align:center}
+.meta-grid .m b{display:block; font-family:"Space Grotesk"; font-size:24px; font-weight:700; color:var(--primary)}
+.meta-grid .m span{font-size:12.5px; color:var(--muted)}
+.inst-body{padding:26px 30px}
+.inst-body h3{font-size:14px; margin-bottom:12px}
+.rules{list-style:none; display:grid; gap:11px}
+.rules li{display:flex; gap:11px; font-size:14.5px; color:var(--ink); align-items:flex-start}
+.rules li .b{width:22px; height:22px; border-radius:7px; flex:none; display:grid; place-items:center;
+  background:var(--accent-wash); color:var(--accent); font-size:13px; margin-top:1px}
+.inst-foot{padding:22px 30px; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap}
+.chip-list{display:flex; gap:8px; flex-wrap:wrap}
+.chip{font-size:12px; font-weight:600; padding:5px 11px; border-radius:20px; background:var(--surface-3); color:var(--muted)}
+
+/* ---------- TEST ---------- */
+.test-top{position:sticky; top:env(safe-area-inset-top,0px); z-index:30; background:var(--surface);
+  border-bottom:1px solid var(--border); box-shadow:0 1px 0 rgba(10,26,47,.03)}
+.test-top-in{max-width:1180px; margin:0 auto; padding:11px 18px; display:flex; align-items:center; gap:16px}
+.test-cand{display:flex; align-items:center; gap:10px; min-width:0}
+.avatar{width:34px; height:34px; border-radius:50%; flex:none; display:grid; place-items:center; color:#fff; font-weight:700; font-size:13px;
+  background:linear-gradient(150deg,var(--deep-b),var(--deep-c)); font-family:"Space Grotesk"}
+.test-cand .nm{font-weight:600; font-size:14px; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.test-cand .id{font-size:11.5px; color:var(--muted)}
+.test-progress-wrap{flex:1; min-width:70px}
+.pbar{height:7px; border-radius:6px; background:var(--surface-3); overflow:hidden}
+.pbar i{display:block; height:100%; width:0; border-radius:6px; background:linear-gradient(90deg,var(--primary),var(--accent)); transition:width .35s}
+.pbar-label{font-size:11px; color:var(--muted); margin-top:4px; display:flex; justify-content:space-between}
+.timer{display:flex; align-items:center; gap:8px; padding:8px 14px; border-radius:11px; flex:none;
+  background:var(--surface-2); border:1px solid var(--border); font-family:"Space Grotesk"; font-weight:700; font-size:17px; font-variant-numeric:tabular-nums}
+.timer .dot{width:8px; height:8px; border-radius:50%; background:var(--success)}
+.timer.warn{background:var(--warn-wash); border-color:transparent; color:var(--warn)}
+.timer.warn .dot{background:var(--warn); animation:blink 1s steps(2) infinite}
+.timer.crit{background:var(--danger-wash); border-color:transparent; color:var(--danger)}
+.timer.crit .dot{background:var(--danger); animation:blink .6s steps(2) infinite}
+@keyframes blink{50%{opacity:.25}}
+
+.test-main{max-width:1180px; margin:0 auto; width:100%; padding:20px 18px 120px;
+  display:grid; grid-template-columns:1fr 280px; gap:22px; align-items:start; flex:1}
+.q-card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden}
+.q-head{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px 22px; border-bottom:1px solid var(--border); background:var(--surface-2)}
+.q-head .l{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+.q-num{font-family:"Space Grotesk"; font-weight:700; font-size:15px}
+.badge{font-size:11px; font-weight:600; padding:4px 10px; border-radius:20px; letter-spacing:.01em}
+.badge.sec{background:var(--primary-wash); color:var(--primary)}
+.badge.type{background:var(--accent-wash); color:var(--accent)}
+.badge.pts{background:var(--surface-3); color:var(--muted)}
+.flag-btn{display:inline-flex; align-items:center; gap:7px; font-size:13px; font-weight:600; padding:7px 12px; border-radius:9px; border:1px solid var(--border); background:var(--surface); color:var(--muted); transition:.15s}
+.flag-btn:hover{border-color:var(--flag); color:var(--flag)}
+.flag-btn.on{background:var(--warn-wash); border-color:transparent; color:var(--flag)}
+.q-body{padding:24px 22px}
+.q-text{font-size:17px; font-weight:500; line-height:1.5; color:var(--ink)}
+.q-hint{font-size:13px; color:var(--muted); margin-top:7px}
+.options{display:grid; gap:11px; margin-top:20px}
+.opt{display:flex; align-items:center; gap:13px; padding:14px 16px; border-radius:12px; border:1.5px solid var(--border);
+  background:var(--surface); cursor:pointer; transition:.14s; font-size:15px}
+.opt:hover{border-color:var(--border-strong); background:var(--surface-2)}
+.opt .box{width:21px; height:21px; flex:none; border:2px solid var(--border-strong); display:grid; place-items:center; transition:.14s}
+.opt .box.radio{border-radius:50%}
+.opt .box.check{border-radius:6px}
+.opt .box i{opacity:0; color:#fff; font-size:12px; line-height:1}
+.opt.sel{border-color:var(--primary); background:var(--primary-wash)}
+.opt.sel .box{background:var(--primary); border-color:var(--primary)}
+.opt.sel .box i{opacity:1}
+.opt .key{font-weight:700; color:var(--muted); font-family:"Space Grotesk"; width:14px}
+.opt.sel .key{color:var(--primary)}
+.num-input{margin-top:20px; max-width:280px}
+.num-input input{width:100%; padding:14px 16px; font-size:17px; border-radius:12px; border:1.5px solid var(--border); background:var(--surface-2); color:var(--ink); font-family:"Space Grotesk"; font-weight:600}
+.num-input input:focus{outline:none; border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-wash); background:var(--surface)}
+.multi-note{font-size:12.5px; color:var(--accent); font-weight:600; margin-top:14px; margin-bottom:-4px; display:flex; align-items:center; gap:6px}
+
+/* navigator */
+.nav-panel{position:sticky; top:calc(env(safe-area-inset-top,0px) + 78px)}
+.nav-card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px}
+.nav-card h4{font-size:13px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center}
+.nav-card h4 span{font-weight:500; color:var(--muted); font-size:12px}
+.pal{display:grid; grid-template-columns:repeat(6,1fr); gap:8px}
+.pal button{aspect-ratio:1; border-radius:9px; font-family:"Space Grotesk"; font-weight:700; font-size:13.5px;
+  border:1.5px solid var(--border); background:var(--surface-2); color:var(--muted); transition:.13s; position:relative}
+.pal button:hover{transform:translateY(-1px)}
+.pal button.answered{background:var(--primary); border-color:var(--primary); color:#fff}
+.pal button.flagged{background:var(--warn-wash); border-color:var(--flag); color:var(--flag)}
+.pal button.flagged.answered{background:var(--primary); color:#fff}
+.pal button.flagged::after{content:""; position:absolute; top:-3px; right:-3px; width:9px; height:9px; border-radius:50%; background:var(--flag); border:2px solid var(--surface)}
+.pal button.current{outline:2.5px solid var(--accent); outline-offset:2px}
+.legend{display:grid; gap:7px; margin-top:16px; padding-top:15px; border-top:1px solid var(--border)}
+.legend div{display:flex; align-items:center; gap:9px; font-size:12.5px; color:var(--muted)}
+.legend .sw{width:15px; height:15px; border-radius:5px; flex:none; border:1.5px solid var(--border)}
+.legend .sw.a{background:var(--primary); border-color:var(--primary)}
+.legend .sw.f{background:var(--warn-wash); border-color:var(--flag)}
+.legend .sw.c{outline:2px solid var(--accent); outline-offset:1px}
+.nav-submit{margin-top:16px; width:100%}
+
+/* footer nav */
+.test-foot{position:fixed; left:0; right:0; bottom:0; z-index:30; background:var(--surface);
+  border-top:1px solid var(--border); box-shadow:0 -4px 20px rgba(10,26,47,.06);
+  padding-bottom:env(safe-area-inset-bottom,0px)}
+.test-foot-in{max-width:1180px; margin:0 auto; padding:13px 18px; display:flex; align-items:center; justify-content:space-between; gap:12px}
+.foot-mid{font-size:13px; color:var(--muted); font-weight:500}
+.foot-mid b{color:var(--ink); font-family:"Space Grotesk"}
+
+/* proctor toast */
+.toast{position:fixed; left:50%; transform:translateX(-50%); bottom:84px; z-index:60;
+  background:var(--ink); color:var(--bg); padding:12px 18px; border-radius:12px; font-size:13.5px; font-weight:500;
+  box-shadow:var(--shadow-lg); display:flex; align-items:center; gap:10px; max-width:92vw;
+  opacity:0; pointer-events:none; transition:.3s}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+.toast .ic{font-size:16px}
+
+/* ---------- RESULTS ---------- */
+.res-wrap{max-width:900px; margin:10px auto 60px; width:100%; padding:0 18px; flex:1}
+.res-hero{border-radius:20px; overflow:hidden; box-shadow:var(--shadow); border:1px solid var(--border)}
+.res-hero-top{padding:36px 34px; color:#fff; position:relative; overflow:hidden; text-align:center;
+  background:linear-gradient(158deg,var(--deep-a),var(--deep-b) 55%,var(--deep-c))}
+.res-hero-top.fail{background:linear-gradient(158deg,#3a1420,#7a2b3a 55%,#b24a4a)}
+.res-hero-top::after{content:""; position:absolute; inset:0;
+  background:repeating-linear-gradient(115deg, rgba(255,255,255,.05) 0 2px, transparent 2px 26px)}
+.res-status{position:relative; display:inline-flex; align-items:center; gap:8px; padding:6px 16px; border-radius:30px;
+  background:rgba(255,255,255,.18); font-size:13px; font-weight:700; letter-spacing:.04em; margin-bottom:18px}
+.score-ring{position:relative; width:168px; height:168px; margin:0 auto}
+.score-ring svg{transform:rotate(-90deg)}
+.score-ring .center{position:absolute; inset:0; display:grid; place-content:center; text-align:center}
+.score-ring .pct{font-family:"Space Grotesk"; font-size:44px; font-weight:700; line-height:1}
+.score-ring .lbl{font-size:12px; color:rgba(255,255,255,.8); margin-top:2px}
+.res-hero-top h2{position:relative; font-size:22px; margin-top:16px}
+.res-hero-top .pass-line{position:relative; color:rgba(255,255,255,.85); font-size:14px; margin-top:5px}
+.res-summary{display:grid; grid-template-columns:repeat(4,1fr); background:var(--surface)}
+.res-summary .rs{padding:18px 14px; text-align:center; border-right:1px solid var(--border)}
+.res-summary .rs:last-child{border-right:none}
+.res-summary .rs b{display:block; font-family:"Space Grotesk"; font-size:22px; font-weight:700}
+.res-summary .rs span{font-size:12px; color:var(--muted)}
+.res-summary .rs.good b{color:var(--success)} .res-summary .rs.bad b{color:var(--danger)}
+
+.sec-block{margin-top:26px}
+.sec-block h3{font-size:15px; margin-bottom:14px; display:flex; align-items:center; gap:9px}
+.sec-row{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:15px 18px; margin-bottom:10px; box-shadow:var(--shadow)}
+.sec-row .top{display:flex; justify-content:space-between; align-items:center; margin-bottom:9px}
+.sec-row .nm{font-weight:600; font-size:14.5px}
+.sec-row .sc{font-family:"Space Grotesk"; font-weight:700; font-size:14px}
+.sec-track{height:8px; border-radius:6px; background:var(--surface-3); overflow:hidden}
+.sec-track i{display:block; height:100%; border-radius:6px; transition:width .6s}
+
+.review{margin-top:30px}
+.review-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; gap:10px; flex-wrap:wrap}
+.review-head h3{font-size:16px}
+.rev-filter{display:flex; gap:6px}
+.rev-filter button{font-size:12.5px; font-weight:600; padding:7px 13px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--muted)}
+.rev-filter button.on{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+.rev-item{background:var(--surface); border:1px solid var(--border); border-radius:12px; margin-bottom:11px; overflow:hidden; box-shadow:var(--shadow)}
+.rev-item .rh{display:flex; gap:12px; padding:15px 18px; align-items:flex-start}
+.rev-mark{width:26px; height:26px; border-radius:8px; flex:none; display:grid; place-items:center; font-size:14px; font-weight:700; color:#fff; margin-top:1px}
+.rev-mark.ok{background:var(--success)} .rev-mark.no{background:var(--danger)} .rev-mark.skip{background:var(--faint)}
+.rev-q{flex:1; min-width:0}
+.rev-q .qt{font-size:15px; font-weight:500; line-height:1.45}
+.rev-q .meta{font-size:11.5px; color:var(--muted); margin-top:4px; display:flex; gap:7px; flex-wrap:wrap}
+.rev-ans{padding:0 18px 16px 56px; display:grid; gap:7px}
+.ans-line{font-size:13.5px; padding:9px 13px; border-radius:9px; display:flex; gap:9px; align-items:flex-start}
+.ans-line .k{font-weight:600; flex:none; width:95px; color:var(--muted)}
+.ans-line.correct{background:var(--success-wash)} .ans-line.correct .v{color:var(--success); font-weight:600}
+.ans-line.yours-wrong{background:var(--danger-wash)} .ans-line.yours-wrong .v{color:var(--danger); font-weight:600}
+.ans-line.yours-ok{background:var(--success-wash)} .ans-line.yours-ok .v{color:var(--success); font-weight:600}
+.ans-line.neutral{background:var(--surface-2)}
+.res-actions{display:flex; gap:12px; justify-content:center; margin-top:30px; flex-wrap:wrap}
+.disclaimer{text-align:center; font-size:12px; color:var(--faint); margin-top:22px; max-width:60ch; margin-left:auto; margin-right:auto}
+
+/* ---------- Modal ---------- */
+.modal-bg{position:fixed; inset:0; z-index:80; background:rgba(8,16,30,.55); backdrop-filter:blur(3px);
+  display:grid; place-items:center; padding:20px; opacity:0; pointer-events:none; transition:.2s}
+.modal-bg.show{opacity:1; pointer-events:auto}
+.modal{background:var(--surface); border-radius:18px; box-shadow:var(--shadow-lg); max-width:440px; width:100%;
+  padding:28px; text-align:center; transform:scale(.96); transition:.2s}
+.modal-bg.show .modal{transform:scale(1)}
+.modal .mic{width:56px; height:56px; border-radius:15px; margin:0 auto 16px; display:grid; place-items:center; font-size:27px; background:var(--warn-wash); color:var(--warn)}
+.modal h3{font-size:20px} .modal p{color:var(--muted); font-size:14.5px; margin-top:8px; line-height:1.55}
+.modal .acts{display:flex; gap:11px; margin-top:24px}
+.modal .acts .btn{flex:1}
+
+.hidden{display:none !important}
+
+/* ---------- Responsive ---------- */
+@media (max-width:860px){
+  .login-wrap{grid-template-columns:1fr; max-width:460px}
+  .login-hero{border-radius:20px 20px 0 0; padding:34px 28px}
+  .login-hero .hero-stats{padding-top:22px}
+  .login-card{border-left:1px solid var(--border); border-top:none; border-radius:0 0 20px 20px; padding:30px 26px}
+  .test-main{grid-template-columns:1fr; gap:16px}
+  .nav-panel{position:static; order:2}
+  .nav-card{padding:16px}
+  .pal{grid-template-columns:repeat(8,1fr)}
+  .meta-grid{grid-template-columns:repeat(2,1fr)}
+  .res-summary{grid-template-columns:repeat(2,1fr)}
+  .res-summary .rs:nth-child(2){border-right:none}
+  .res-summary .rs:nth-child(1),.res-summary .rs:nth-child(2){border-bottom:1px solid var(--border)}
+}
+@media (max-width:560px){
+  .test-top-in{flex-wrap:wrap; gap:10px}
+  .test-progress-wrap{order:3; flex-basis:100%}
+  .timer{font-size:15px; padding:7px 11px}
+  .q-body{padding:20px 16px} .q-head{padding:13px 16px}
+  .inst-head,.inst-body,.inst-foot{padding-left:20px; padding-right:20px}
+  .pal{grid-template-columns:repeat(6,1fr)}
+  .foot-mid{display:none}
+  .btn{padding:11px 16px; font-size:14px}
+  .ans-line{flex-direction:column; gap:3px} .ans-line .k{width:auto}
+  .rev-ans{padding-left:18px}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<!-- toast -->
+<div class="toast" id="toast"><span class="ic">⚠️</span><span id="toastMsg"></span></div>
+
+<!-- confirm modal -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <div class="mic" id="modalIc">⚠️</div>
+    <h3 id="modalTitle"></h3>
+    <p id="modalBody"></p>
+    <div class="acts">
+      <button class="btn btn-ghost" id="modalCancel">Cancel</button>
+      <button class="btn btn-primary" id="modalOk">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   BlueCascade Assessments  —  single-file assessment engine
+   ============================================================ */
+
+const STORE_KEY = "bluecascade_session_v1";
+const PASS_MARK = 60;          // % to pass
+const QUESTIONS_PER_TEST = 12; // drawn from the bank
+const DURATION_MIN = 18;       // minutes
+
+/* ---------- safe storage ---------- */
+const store = {
+  save(obj){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(obj)); }catch(e){} },
+  load(){ try{ const r = localStorage.getItem(STORE_KEY); return r?JSON.parse(r):null; }catch(e){ return null; } },
+  clear(){ try{ localStorage.removeItem(STORE_KEY); }catch(e){} }
+};
+
+/* ---------- question bank ----------
+   type: 'single' | 'multi' | 'tf' | 'numeric'
+   answer: index | [indices] | boolean | number
+------------------------------------------------- */
+const BANK = [
+  // Numerical Reasoning
+  {s:"Numerical Reasoning", type:"single", pts:1, q:"A jacket costs $80 after a 20% discount. What was its original price?", opts:["$96","$100","$64","$120"], answer:1},
+  {s:"Numerical Reasoning", type:"single", pts:1, q:"What is 15% of 240?", opts:["24","30","36","48"], answer:2},
+  {s:"Numerical Reasoning", type:"numeric", pts:1, q:"A train travels 240 km in 3 hours at a constant speed. What is its speed in km/h?", answer:80, suffix:"km/h"},
+  {s:"Numerical Reasoning", type:"single", pts:1, q:"Two amounts are split in the ratio 3 : 5. If the total is 64, what is the larger share?", opts:["24","32","40","48"], answer:2},
+  {s:"Numerical Reasoning", type:"numeric", pts:1, q:"Find the next number in the series: 2, 6, 12, 20, 30, …", answer:42},
+  {s:"Numerical Reasoning", type:"single", pts:1, q:"What is the average of 10, 20, 30, 40 and 50?", opts:["25","30","35","40"], answer:1},
+  {s:"Numerical Reasoning", type:"numeric", pts:1, q:"Five tasks each take 2 days and are done one after another by a single person. How many days in total?", answer:10, suffix:"days"},
+
+  // Logical Reasoning
+  {s:"Logical Reasoning", type:"single", pts:1, q:"All cats are animals. Some animals are pets. Which statement MUST be true?", opts:["All cats are pets","Some cats are pets","All pets are cats","None of these must be true"], answer:3},
+  {s:"Logical Reasoning", type:"tf", pts:1, q:"“If it rains, the ground gets wet. The ground is wet, therefore it rained.” This conclusion is logically valid.", answer:false, hint:"Consider other reasons the ground could be wet."},
+  {s:"Logical Reasoning", type:"single", pts:1, q:"Which one does NOT belong with the others?", opts:["Square","Circle","Triangle","Cube"], answer:3, hint:"Three are 2-D shapes."},
+  {s:"Logical Reasoning", type:"single", pts:1, q:"Complete the pattern: AZ, BY, CX, __", opts:["DV","DW","EW","CW"], answer:1},
+  {s:"Logical Reasoning", type:"multi", pts:2, q:"Select ALL of the prime numbers below.", opts:["2","9","11","15","17"], answer:[0,2,4]},
+  {s:"Logical Reasoning", type:"single", pts:1, q:"Pointing at a photo, a man says, “She is the only daughter of my mother.” Who is she to him?", opts:["His mother","His sister","His daughter","His aunt"], answer:1},
+
+  // Verbal Ability
+  {s:"Verbal Ability", type:"single", pts:1, q:"Choose the word closest in meaning to “abundant”.", opts:["Scarce","Plentiful","Hollow","Rare"], answer:1},
+  {s:"Verbal Ability", type:"single", pts:1, q:"Choose the antonym of “transparent”.", opts:["Clear","Opaque","Visible","Sheer"], answer:1},
+  {s:"Verbal Ability", type:"single", pts:1, q:"Which word is spelled correctly?", opts:["Acommodate","Accomodate","Accommodate","Acomodate"], answer:2},
+  {s:"Verbal Ability", type:"single", pts:1, q:"Complete the sentence: “Neither the players nor the coach ___ satisfied with the result.”", opts:["were","was","are","have"], answer:1, hint:"The verb agrees with the nearer subject."},
+  {s:"Verbal Ability", type:"tf", pts:1, q:"In standard usage, “affect” is most often a verb and “effect” is most often a noun.", answer:true},
+
+  // Situational Judgment
+  {s:"Situational Judgment", type:"single", pts:1, q:"You realize a project deadline is now at risk. What is the best first action?", opts:["Keep working quietly and hope to catch up","Tell your manager early and bring options","Wait until the deadline to explain","Ask a teammate to take the blame"], answer:1},
+  {s:"Situational Judgment", type:"multi", pts:2, q:"Which of these make a team meeting more productive? Select all that apply.", opts:["Share an agenda beforehand","Start on time","Let it run over with no limit","Assign clear action items"], answer:[0,1,3]},
+  {s:"Situational Judgment", type:"single", pts:1, q:"A customer is upset about a shipping delay. What is the best response?", opts:["Explain it is not your department","Acknowledge it, apologize, and give a clear next step","Offer no reply until it is resolved","Tell them delays are normal"], answer:1}
+];
+
+/* ---------- state ---------- */
+let S = null;      // session state
+let timerId = null;
+
+/* ---------- helpers ---------- */
+const $ = (sel,root=document)=>root.querySelector(sel);
+const app = $("#app");
+const esc = s => String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function initials(name){ return name.trim().split(/\s+/).map(w=>w[0]).slice(0,2).join("").toUpperCase()||"C"; }
+function fmtTime(sec){ const m=Math.floor(sec/60), s=sec%60; return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`; }
+
+/* theme toggle */
+function currentTheme(){ return document.documentElement.getAttribute("data-theme"); }
+function toggleTheme(){
+  const prefersDark = matchMedia("(prefers-color-scheme: dark)").matches;
+  const cur = currentTheme() || (prefersDark?"dark":"light");
+  const next = cur==="dark"?"light":"dark";
+  document.documentElement.setAttribute("data-theme", next);
+  try{ localStorage.setItem("bc_theme", next); }catch(e){}
+  const b=$("#themeBtn"); if(b) b.textContent = next==="dark"?"☀️":"🌙";
+}
+(function initTheme(){ try{ const t=localStorage.getItem("bc_theme"); if(t) document.documentElement.setAttribute("data-theme",t);}catch(e){} })();
+
+/* toast */
+let toastTimer=null;
+function toast(msg){
+  const t=$("#toast"); $("#toastMsg").textContent=msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("show"),3200);
+}
+
+/* modal */
+function confirmModal({title,body,ok="Confirm",icon="⚠️",danger=false}){
+  return new Promise(res=>{
+    $("#modalTitle").textContent=title; $("#modalBody").textContent=body;
+    $("#modalIc").textContent=icon; const okb=$("#modalOk"); okb.textContent=ok;
+    okb.className="btn "+(danger?"btn-danger":"btn-primary");
+    const bg=$("#modalBg"); bg.classList.add("show");
+    const done=v=>{ bg.classList.remove("show"); okb.onclick=null; $("#modalCancel").onclick=null; res(v); };
+    okb.onclick=()=>done(true); $("#modalCancel").onclick=()=>done(false);
+  });
+}
+
+/* topbar */
+function topbar(){
+  return `<div class="topbar">
+    <div class="brand"><span class="mark"></span><span>BlueCascade<small>Talent Assessments</small></span></div>
+    <div class="right"><button class="theme-btn" id="themeBtn" aria-label="Toggle theme">${currentTheme()==="dark"?"☀️":"🌙"}</button></div>
+  </div>`;
+}
+function wireTop(){ const b=$("#themeBtn"); if(b) b.onclick=toggleTheme; }
+
+/* ============================================================
+   SCREEN: LOGIN
+   ============================================================ */
+function renderLogin(){
+  app.innerHTML = `
+  <div class="screen fade">
+    ${topbar()}
+    <div class="login-wrap">
+      <div class="login-hero">
+        <div class="eyebrow">Candidate Assessment Portal</div>
+        <h1>Show us how you think.</h1>
+        <p>A short, timed assessment covering reasoning, verbal and situational judgment. Find a quiet spot — you’ve got this.</p>
+        <div class="hero-stats">
+          <div class="s"><b>${QUESTIONS_PER_TEST}</b><span>questions</span></div>
+          <div class="s"><b>${DURATION_MIN}</b><span>minutes</span></div>
+          <div class="s"><b>4</b><span>skill areas</span></div>
+        </div>
+      </div>
+      <div class="login-card">
+        <h2>Verify your details</h2>
+        <p class="sub">Enter the information from your invitation to begin.</p>
+        <div class="field" id="f-name">
+          <label for="in-name">Full name</label>
+          <input id="in-name" type="text" placeholder="e.g. Priya Sharma" autocomplete="name">
+          <div class="err">Please enter your full name.</div>
+        </div>
+        <div class="field" id="f-email">
+          <label for="in-email">Email address</label>
+          <input id="in-email" type="email" placeholder="you@email.com" autocomplete="email">
+          <div class="err">Please enter a valid email address.</div>
+        </div>
+        <div class="field" id="f-code">
+          <label for="in-code">Invitation code</label>
+          <input id="in-code" type="text" placeholder="e.g. BC-2026" value="BC-2026">
+          <div class="err">Enter the code from your invite.</div>
+        </div>
+        <label class="consent">
+          <input type="checkbox" id="in-consent">
+          <span>I confirm I will take this assessment honestly and understand the session is monitored for integrity.</span>
+        </label>
+        <button class="btn btn-primary btn-lg" id="startBtn" style="width:100%">Start assessment</button>
+        <div class="login-foot">Your responses are scored automatically and shared with the BlueCascade hiring team.</div>
+      </div>
+    </div>
+  </div>`;
+  wireTop();
+  $("#startBtn").onclick = handleLogin;
+  ["in-name","in-email","in-code"].forEach(id=>{
+    $("#"+id).addEventListener("keydown",e=>{ if(e.key==="Enter") handleLogin(); });
+  });
+}
+
+function handleLogin(){
+  const name=$("#in-name").value.trim();
+  const email=$("#in-email").value.trim();
+  const code=$("#in-code").value.trim();
+  const consent=$("#in-consent").checked;
+  let ok=true;
+  const mark=(id,bad)=>{ $("#"+id).classList.toggle("invalid",bad); if(bad) ok=false; };
+  mark("f-name", name.length<2);
+  mark("f-email", !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
+  mark("f-code", code.length<3);
+  if(!consent){ ok=false; toast("Please confirm the integrity statement to continue."); }
+  if(!ok) return;
+
+  const candId = "BC-" + Math.random().toString(36).slice(2,6).toUpperCase() + "-" + Math.floor(100+Math.random()*900);
+  // build a randomized test
+  const picked = shuffle(BANK).slice(0, QUESTIONS_PER_TEST).map(base=>{
+    const q = {...base};
+    if(q.type==="single"||q.type==="multi"){
+      // shuffle options, remap answer
+      const idx = q.opts.map((_,i)=>i);
+      const order = shuffle(idx);
+      q.opts = order.map(i=>base.opts[i]);
+      if(q.type==="single"){ q.answer = order.indexOf(base.answer); }
+      else { q.answer = base.answer.map(a=>order.indexOf(a)).sort((x,y)=>x-y); }
+    }
+    q.responded=false; q.flagged=false; q.response=null;
+    return q;
+  });
+
+  S = {
+    candidate:{name,email,code,candId},
+    questions:picked,
+    current:0,
+    timeLeft: DURATION_MIN*60,
+    tabSwitches:0,
+    startedAt: Date.now(),
+    phase:"instructions"
+  };
+  store.save(S);
+  renderInstructions();
+}
+
+/* ============================================================
+   SCREEN: INSTRUCTIONS
+   ============================================================ */
+function renderInstructions(){
+  const totalPts = S.questions.reduce((a,q)=>a+q.pts,0);
+  const secs=[...new Set(S.questions.map(q=>q.s))];
+  app.innerHTML=`
+  <div class="screen fade">
+    ${topbar()}
+    <div class="center-narrow">
+      <div class="card">
+        <div class="inst-head">
+          <div class="ic">📋</div>
+          <div><h2>Before you begin, ${esc(S.candidate.name.split(" ")[0])}</h2>
+          <p>Read the guidelines below, then start when you’re ready.</p></div>
+        </div>
+        <div class="meta-grid">
+          <div class="m"><b>${S.questions.length}</b><span>Questions</span></div>
+          <div class="m"><b>${DURATION_MIN}:00</b><span>Time limit</span></div>
+          <div class="m"><b>${totalPts}</b><span>Total marks</span></div>
+          <div class="m"><b>${PASS_MARK}%</b><span>To qualify</span></div>
+        </div>
+        <div class="inst-body">
+          <h3>Guidelines</h3>
+          <ul class="rules">
+            <li><span class="b">✓</span><span>The timer starts the moment you begin and the test <b>auto-submits</b> when it reaches zero.</span></li>
+            <li><span class="b">✓</span><span>You can move freely between questions, change answers, and <b>flag</b> items to revisit.</span></li>
+            <li><span class="b">✓</span><span>Some questions allow <b>multiple correct answers</b> — these are clearly labelled.</span></li>
+            <li><span class="b">✓</span><span>Stay on this tab. <b>Switching away is logged</b> as part of integrity monitoring.</span></li>
+            <li><span class="b">✓</span><span>Your progress is saved on this device, so a refresh won’t lose your answers.</span></li>
+          </ul>
+          <div style="margin-top:22px"><h3>What’s covered</h3>
+            <div class="chip-list">${secs.map(s=>`<span class="chip">${esc(s)}</span>`).join("")}</div>
+          </div>
+        </div>
+        <div class="inst-foot">
+          <div class="foot-mid" style="font-size:13px;color:var(--muted)">Candidate ID&nbsp; <b style="color:var(--ink);font-family:'Space Grotesk'">${S.candidate.candId}</b></div>
+          <button class="btn btn-primary btn-lg" id="beginBtn">I’m ready — start the timer</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  wireTop();
+  $("#beginBtn").onclick=async ()=>{
+    const go=await confirmModal({title:"Start the assessment?",body:`You’ll have ${DURATION_MIN} minutes once the timer starts. It can’t be paused.`,ok:"Start now",icon:"⏱️"});
+    if(go){ S.phase="test"; S.startedAt=Date.now(); store.save(S); startTest(); }
+  };
+}
+
+/* ============================================================
+   SCREEN: TEST
+   ============================================================ */
+function startTest(){
+  renderTest();
+  startTimer();
+  attachProctor();
+}
+function startTimer(){
+  clearInterval(timerId);
+  timerId=setInterval(()=>{
+    S.timeLeft--;
+    if(S.timeLeft<=0){ S.timeLeft=0; store.save(S); updateTimer(); finishTest(true); return; }
+    if(S.timeLeft%5===0) store.save(S);
+    updateTimer();
+  },1000);
+}
+function updateTimer(){
+  const el=$("#timer"); if(!el) return;
+  el.querySelector("#tval").textContent=fmtTime(S.timeLeft);
+  el.classList.toggle("warn", S.timeLeft<=120 && S.timeLeft>30);
+  el.classList.toggle("crit", S.timeLeft<=30);
+}
+
+let proctorAttached=false;
+function attachProctor(){
+  if(proctorAttached) return; proctorAttached=true;
+  document.addEventListener("visibilitychange",()=>{
+    if(document.hidden && S && S.phase==="test"){
+      S.tabSwitches++; store.save(S);
+      const c=$("#switchCount"); if(c) c.textContent=S.tabSwitches;
+      toast(`Tab switch detected (${S.tabSwitches}). Please stay on this page.`);
+    }
+  });
+}
+
+function answeredCount(){ return S.questions.filter(q=>q.responded).length; }
+
+function renderTest(){
+  const q=S.questions[S.current];
+  const total=S.questions.length;
+  const done=answeredCount();
+  app.innerHTML=`
+  <div class="screen">
+    <div class="test-top">
+      <div class="test-top-in">
+        <div class="test-cand">
+          <div class="avatar">${initials(S.candidate.name)}</div>
+          <div><div class="nm">${esc(S.candidate.name)}</div><div class="id">${S.candidate.candId}</div></div>
+        </div>
+        <div class="test-progress-wrap">
+          <div class="pbar"><i id="pbarFill" style="width:${(done/total)*100}%"></i></div>
+          <div class="pbar-label"><span id="progTxt">${done} of ${total} answered</span><span id="switchWrap" class="${S.tabSwitches?'':'hidden'}">⚑ <span id="switchCount">${S.tabSwitches}</span> tab switch(es)</span></div>
+        </div>
+        <div class="timer" id="timer"><span class="dot"></span><span id="tval">${fmtTime(S.timeLeft)}</span></div>
+      </div>
+    </div>
+
+    <div class="test-main">
+      <div>
+        <div class="q-card fade" id="qCard">${questionHTML(q)}</div>
+      </div>
+      <aside class="nav-panel">
+        <div class="nav-card">
+          <h4>Questions <span id="navCount">${done}/${total}</span></h4>
+          <div class="pal" id="pal">${paletteHTML()}</div>
+          <div class="legend">
+            <div><span class="sw a"></span> Answered</div>
+            <div><span class="sw f"></span> Flagged for review</div>
+            <div><span class="sw c"></span> Current question</div>
+          </div>
+          <button class="btn btn-primary nav-submit" id="submitBtn2">Submit assessment</button>
+        </div>
+      </aside>
+    </div>
+
+    <div class="test-foot">
+      <div class="test-foot-in">
+        <button class="btn btn-ghost btn-sm" id="prevBtn">← Previous</button>
+        <div class="foot-mid">Question <b>${S.current+1}</b> of <b>${total}</b></div>
+        ${S.current===total-1
+          ? `<button class="btn btn-primary btn-sm" id="submitBtn">Review & submit</button>`
+          : `<button class="btn btn-primary btn-sm" id="nextBtn">Next →</button>`}
+      </div>
+    </div>
+  </div>`;
+  wireTestEvents();
+  updateTimer();
+}
+
+function questionHTML(q){
+  const typeLabel = {single:"Single choice", multi:"Multiple answers", tf:"True / False", numeric:"Numeric answer"}[q.type];
+  let body="";
+  if(q.type==="single"){
+    body=`<div class="options" role="radiogroup">${q.opts.map((o,i)=>optRow(o,i,q.response===i,"radio")).join("")}</div>`;
+  } else if(q.type==="multi"){
+    const set=new Set(q.response||[]);
+    body=`<div class="multi-note">◆ Select all that apply</div>
+      <div class="options">${q.opts.map((o,i)=>optRow(o,i,set.has(i),"check")).join("")}</div>`;
+  } else if(q.type==="tf"){
+    body=`<div class="options" role="radiogroup">
+      ${optRow("True",1,q.response===1,"radio",true)}
+      ${optRow("False",0,q.response===0,"radio",true)}</div>`;
+  } else if(q.type==="numeric"){
+    body=`<div class="num-input"><input id="numIn" type="text" inputmode="decimal" placeholder="Type your answer${q.suffix?' in '+esc(q.suffix):''}" value="${q.response!=null?esc(q.response):""}" autocomplete="off"></div>`;
+  }
+  return `
+    <div class="q-head">
+      <div class="l">
+        <span class="q-num">Q${S.current+1}</span>
+        <span class="badge sec">${esc(q.s)}</span>
+        <span class="badge type">${typeLabel}</span>
+        <span class="badge pts">${q.pts} mark${q.pts>1?"s":""}</span>
+      </div>
+      <button class="flag-btn ${q.flagged?'on':''}" id="flagBtn">${q.flagged?"★ Flagged":"☆ Flag"}</button>
+    </div>
+    <div class="q-body">
+      <div class="q-text">${esc(q.q)}</div>
+      ${q.hint?`<div class="q-hint">💡 ${esc(q.hint)}</div>`:""}
+      ${body}
+    </div>`;
+}
+function optRow(label,i,sel,kind,noKey){
+  const key = noKey?"":String.fromCharCode(65+i);
+  return `<label class="opt ${sel?'sel':''}" data-i="${i}">
+    ${key?`<span class="key">${key}</span>`:""}
+    <span class="box ${kind}"><i>✓</i></span>
+    <span>${esc(label)}</span>
+  </label>`;
+}
+function paletteHTML(){
+  return S.questions.map((q,i)=>{
+    const cls=[]; if(q.responded)cls.push("answered"); if(q.flagged)cls.push("flagged"); if(i===S.current)cls.push("current");
+    return `<button class="${cls.join(" ")}" data-nav="${i}">${i+1}</button>`;
+  }).join("");
+}
+
+function wireTestEvents(){
+  const q=S.questions[S.current];
+  // options
+  app.querySelectorAll(".opt").forEach(el=>{
+    el.onclick=()=>selectOption(parseInt(el.dataset.i,10));
+  });
+  // numeric
+  const numIn=$("#numIn");
+  if(numIn){ numIn.oninput=()=>{
+      const v=numIn.value.trim();
+      q.response = v===""?null:v;
+      q.responded = v!=="";
+      refreshProgress();
+  };}
+  // flag
+  $("#flagBtn").onclick=()=>{ q.flagged=!q.flagged; store.save(S); $("#qCard").innerHTML=questionHTML(q); wireTestEvents(); refreshProgress(); };
+  // nav buttons
+  const prev=$("#prevBtn"); prev.disabled=S.current===0;
+  prev.onclick=()=>goTo(S.current-1);
+  const next=$("#nextBtn"); if(next) next.onclick=()=>goTo(S.current+1);
+  const sub=$("#submitBtn"); if(sub) sub.onclick=promptSubmit;
+  $("#submitBtn2").onclick=promptSubmit;
+  // palette
+  $("#pal").querySelectorAll("[data-nav]").forEach(b=>{ b.onclick=()=>goTo(parseInt(b.dataset.nav,10)); });
+}
+
+function selectOption(i){
+  const q=S.questions[S.current];
+  if(q.type==="multi"){
+    const set=new Set(q.response||[]);
+    set.has(i)?set.delete(i):set.add(i);
+    q.response=[...set].sort((a,b)=>a-b);
+    q.responded=q.response.length>0;
+  } else {
+    q.response=i; q.responded=true;
+  }
+  store.save(S);
+  $("#qCard").innerHTML=questionHTML(q); wireTestEvents(); refreshProgress();
+}
+function refreshProgress(){
+  const total=S.questions.length, done=answeredCount();
+  const f=$("#pbarFill"); if(f) f.style.width=((done/total)*100)+"%";
+  const t=$("#progTxt"); if(t) t.textContent=`${done} of ${total} answered`;
+  const nc=$("#navCount"); if(nc) nc.textContent=`${done}/${total}`;
+  const pal=$("#pal"); if(pal) pal.innerHTML=paletteHTML();
+  if(pal) pal.querySelectorAll("[data-nav]").forEach(b=>{ b.onclick=()=>goTo(parseInt(b.dataset.nav,10)); });
+}
+function goTo(i){
+  if(i<0||i>=S.questions.length) return;
+  // commit numeric field if present
+  S.current=i; store.save(S); renderTest();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+async function promptSubmit(){
+  const total=S.questions.length, done=answeredCount();
+  const left=total-done;
+  const body = left>0
+    ? `You’ve answered ${done} of ${total} questions. ${left} unanswered question${left>1?"s":""} will be marked as skipped.`
+    : `You’ve answered all ${total} questions. Ready to submit?`;
+  const go=await confirmModal({title:"Submit your assessment?",body,ok:"Submit now",icon:"📤"});
+  if(go) finishTest(false);
+}
+
+/* ---------- Supabase ---------- */
+const SUPABASE_URL = "https://bjwyunkxrgqcmtuyywvh.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqd3l1bmt4cmdxY210dXl5d3ZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE1MjQ2MTQsImV4cCI6MjEwNzEwMDYxNH0.ww00QTg5hqE0kVnqcq-cs8w3vKf2GImb6_8ymzDYtDo";
+
+async function sendResult(payload){
+  try{
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/submissions`, {
+      method:"POST",
+      headers:{
+        "apikey":SUPABASE_KEY,
+        "Authorization":`Bearer ${SUPABASE_KEY}`,
+        "Content-Type":"application/json",
+        "Prefer":"return=minimal"
+      },
+      body:JSON.stringify(payload)
+    });
+    return r.ok;
+  }catch(e){ console.error(e); return false; }
+}
+
+function finishTest(auto){
+  clearInterval(timerId);
+  if(auto) toast("Time’s up — your assessment was submitted automatically.");
+  S.phase="results"; S.submittedAt=Date.now(); store.save(S);
+  const R=computeResults();
+  if(!S.sent){
+    S.sent=true; store.save(S);
+    sendResult({
+      test:"bluecascade",
+      candidate_id:S.candidate.candId,
+      candidate_name:S.candidate.name,
+      candidate_email:S.candidate.email,
+      invite_code:S.candidate.code,
+      score:R.pct, points:R.gained, total:R.total, passed:R.passed,
+      tab_switches:S.tabSwitches,
+      duration_sec:Math.round((S.submittedAt-S.startedAt)/1000),
+      answers:R.detail.map(d=>({section:d.q.s,question:d.q.q,type:d.q.type,response:d.q.response,correct:d.ok}))
+    }).then(ok=>{ if(!ok){ S.sent=false; store.save(S); } });
+  }
+  renderResults(R);
+}
+
+/* ============================================================
+   SCORING
+   ============================================================ */
+function isCorrect(q){
+  if(!q.responded || q.response==null) return false;
+  if(q.type==="single"||q.type==="tf") return q.response===q.answer;
+  if(q.type==="multi"){
+    const a=(q.response||[]).slice().sort((x,y)=>x-y);
+    return a.length===q.answer.length && a.every((v,i)=>v===q.answer[i]);
+  }
+  if(q.type==="numeric"){
+    const n=parseFloat(String(q.response).replace(/[^\d.\-]/g,""));
+    return !isNaN(n) && Math.abs(n-q.answer)<1e-9;
+  }
+  return false;
+}
+function computeResults(){
+  let gained=0, total=0; const secs={};
+  const detail=S.questions.map(q=>{
+    const ok=isCorrect(q); const got=ok?q.pts:0;
+    gained+=got; total+=q.pts;
+    if(!secs[q.s]) secs[q.s]={got:0,max:0,correct:0,count:0};
+    secs[q.s].got+=got; secs[q.s].max+=q.pts; secs[q.s].count++; if(ok)secs[q.s].correct++;
+    return {q, ok, answered:q.responded};
+  });
+  const pct=total?Math.round((gained/total)*100):0;
+  const correctCount=detail.filter(d=>d.ok).length;
+  const answered=detail.filter(d=>d.answered).length;
+  return {gained,total,pct,passed:pct>=PASS_MARK,secs,detail,correctCount,answered,qCount:S.questions.length};
+}
+
+/* ============================================================
+   SCREEN: RESULTS
+   ============================================================ */
+function labelFor(q){
+  if(q.type==="numeric") return [String(q.answer)+(q.suffix?" "+q.suffix:"")];
+  if(q.type==="tf") return [q.answer?"True":"False"];
+  if(q.type==="single") return [q.opts[q.answer]];
+  return q.answer.map(i=>q.opts[i]);
+}
+function yourLabelFor(q){
+  if(!q.responded||q.response==null) return null;
+  if(q.type==="numeric") return [String(q.response)];
+  if(q.type==="tf") return [q.response?"True":"False"];
+  if(q.type==="single") return [q.opts[q.response]];
+  return (q.response||[]).map(i=>q.opts[i]);
+}
+
+function renderResults(R){
+  const circ=2*Math.PI*74;
+  const dash=circ*(R.pct/100);
+  const name=S.candidate.name.split(" ")[0];
+  const mins=Math.max(1,Math.round(((S.submittedAt-S.startedAt)/60000)));
+  app.innerHTML=`
+  <div class="screen fade">
+    ${topbar()}
+    <div class="res-wrap">
+      <div class="res-hero">
+        <div class="res-hero-top ${R.passed?'':'fail'}">
+          <div class="res-status">${R.passed?"✓ QUALIFIED":"✕ NOT QUALIFIED"}</div>
+          <div class="score-ring">
+            <svg width="168" height="168" viewBox="0 0 168 168">
+              <circle cx="84" cy="84" r="74" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="13"></circle>
+              <circle cx="84" cy="84" r="74" fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round"
+                stroke-dasharray="${dash} ${circ}" style="transition:stroke-dasharray 1s ease"></circle>
+            </svg>
+            <div class="center"><div class="pct">${R.pct}%</div><div class="lbl">${R.gained}/${R.total} marks</div></div>
+          </div>
+          <h2>${R.passed?`Nicely done, ${esc(name)}.`:`Thanks for completing it, ${esc(name)}.`}</h2>
+          <div class="pass-line">${R.passed?`You scored above the ${PASS_MARK}% qualifying mark.`:`The qualifying mark for this role is ${PASS_MARK}%.`}</div>
+        </div>
+        <div class="res-summary">
+          <div class="rs good"><b>${R.correctCount}</b><span>Correct</span></div>
+          <div class="rs bad"><b>${R.qCount-R.correctCount}</b><span>Incorrect / skipped</span></div>
+          <div class="rs"><b>${R.answered}/${R.qCount}</b><span>Attempted</span></div>
+          <div class="rs"><b>${mins}m</b><span>Time taken</span></div>
+        </div>
+      </div>
+
+      <div class="sec-block">
+        <h3>📊 Section performance</h3>
+        ${Object.entries(R.secs).map(([name,s])=>{
+          const p=Math.round((s.got/s.max)*100);
+          const col=p>=PASS_MARK?"var(--success)":p>=40?"var(--warn)":"var(--danger)";
+          return `<div class="sec-row">
+            <div class="top"><span class="nm">${esc(name)}</span><span class="sc" style="color:${col}">${s.correct}/${s.count} · ${p}%</span></div>
+            <div class="sec-track"><i style="width:${p}%;background:${col}"></i></div>
+          </div>`;
+        }).join("")}
+      </div>
+
+      <div class="review">
+        <div class="review-head">
+          <h3>Answer review</h3>
+          <div class="rev-filter">
+            <button class="on" data-filter="all">All</button>
+            <button data-filter="wrong">Incorrect</button>
+            <button data-filter="right">Correct</button>
+          </div>
+        </div>
+        <div id="revList">${reviewListHTML(R,"all")}</div>
+      </div>
+
+      <div class="res-actions">
+        <button class="btn btn-ghost" id="againBtn">Take a new attempt</button>
+        <button class="btn btn-primary" id="doneBtn">Finish & exit</button>
+      </div>
+      <p class="disclaimer">This is a demonstration of the BlueCascade assessment engine. Scores are generated automatically from your responses and would normally be delivered to the hiring team for review.</p>
+    </div>
+  </div>`;
+  wireTop();
+  // animate ring
+  requestAnimationFrame(()=>{ const c=app.querySelectorAll(".score-ring circle")[1]; if(c){ c.setAttribute("stroke-dasharray",`0 ${circ}`); requestAnimationFrame(()=>c.setAttribute("stroke-dasharray",`${dash} ${circ}`)); }});
+  app.querySelectorAll(".rev-filter button").forEach(b=>{
+    b.onclick=()=>{ app.querySelectorAll(".rev-filter button").forEach(x=>x.classList.remove("on")); b.classList.add("on"); $("#revList").innerHTML=reviewListHTML(R,b.dataset.filter); };
+  });
+  $("#againBtn").onclick=async ()=>{
+    const go=await confirmModal({title:"Start a fresh attempt?",body:"This clears your current results and generates a new randomized test.",ok:"New attempt",icon:"🔄"});
+    if(go){ store.clear(); S=null; renderLogin(); window.scrollTo(0,0); }
+  };
+  $("#doneBtn").onclick=()=>{ store.clear(); S=null; renderGoodbye(); window.scrollTo(0,0); };
+}
+
+function reviewListHTML(R,filter){
+  const items=R.detail.filter(d=> filter==="all" || (filter==="wrong"&&!d.ok) || (filter==="right"&&d.ok));
+  if(!items.length) return `<div style="text-align:center;color:var(--muted);padding:30px;font-size:14px">Nothing to show here.</div>`;
+  return items.map(d=>{
+    const q=d.q; const idx=S.questions.indexOf(q)+1;
+    const correct=labelFor(q); const yours=yourLabelFor(q);
+    const mark = !d.answered?"skip":(d.ok?"ok":"no");
+    const markIc = !d.answered?"–":(d.ok?"✓":"✕");
+    let answerBlock="";
+    if(!d.answered){
+      answerBlock=`<div class="ans-line neutral"><span class="k">Your answer</span><span class="v">Skipped</span></div>
+        <div class="ans-line correct"><span class="k">Correct</span><span class="v">${correct.map(esc).join(", ")}</span></div>`;
+    } else if(d.ok){
+      answerBlock=`<div class="ans-line yours-ok"><span class="k">Your answer</span><span class="v">${yours.map(esc).join(", ")} ✓</span></div>`;
+    } else {
+      answerBlock=`<div class="ans-line yours-wrong"><span class="k">Your answer</span><span class="v">${yours.map(esc).join(", ")}</span></div>
+        <div class="ans-line correct"><span class="k">Correct</span><span class="v">${correct.map(esc).join(", ")}</span></div>`;
+    }
+    return `<div class="rev-item">
+      <div class="rh">
+        <div class="rev-mark ${mark}">${markIc}</div>
+        <div class="rev-q">
+          <div class="qt">Q${idx}. ${esc(q.q)}</div>
+          <div class="meta"><span>${esc(q.s)}</span>·<span>${q.pts} mark${q.pts>1?"s":""}</span>·<span>${d.ok?"+"+q.pts:"0"} earned</span></div>
+        </div>
+      </div>
+      <div class="rev-ans">${answerBlock}</div>
+    </div>`;
+  }).join("");
+}
+
+function renderGoodbye(){
+  app.innerHTML=`
+  <div class="screen fade">
+    ${topbar()}
+    <div class="center-narrow" style="display:flex;align-items:center;justify-content:center">
+      <div class="card" style="padding:48px 36px;text-align:center;max-width:460px">
+        <div style="font-size:48px;margin-bottom:10px">🌊</div>
+        <h2 style="font-size:24px">You’re all set</h2>
+        <p style="color:var(--muted);margin-top:10px;font-size:15px;line-height:1.6">Thanks for completing the BlueCascade assessment. The hiring team will be in touch about next steps.</p>
+        <button class="btn btn-primary btn-lg" id="restart" style="margin-top:26px">Back to start</button>
+      </div>
+    </div>
+  </div>`;
+  wireTop();
+  $("#restart").onclick=()=>renderLogin();
+}
+
+/* ============================================================
+   BOOT  — resume session if one exists
+   ============================================================ */
+(function boot(){
+  const saved=store.load();
+  if(saved && saved.phase){
+    S=saved;
+    if(S.phase==="instructions"){ renderInstructions(); return; }
+    if(S.phase==="test"){
+      if(S.timeLeft<=0){ finishTest(true); return; }
+      startTest(); toast("Welcome back — your session was restored."); return;
+    }
+    if(S.phase==="results"){ renderResults(computeResults()); return; }
+  }
+  renderLogin();
+})();
+</script>
+</body>
+</html>
