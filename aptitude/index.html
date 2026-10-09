@@ -596,28 +596,7 @@ function finish(){
         <div class="bar2"><i style="width:${p}%"></i></div>
       </div>`;
   });
-  html += `</div><div class="review-h">QUESTION REVIEW</div>`;
-
-  // review each question
-  QUESTIONS.forEach((q,i)=>{
-    const chosen = answers[i];
-    html += `<div style="margin-top:22px">
-      <span class="tag">${q.section}</span>`;
-    if(q.passage) html += `<div class="passage" style="margin-top:12px">${q.passage}</div>`;
-    html += `<p class="q" style="font-size:1.08rem">${i+1}. ${q.prompt}</p>`;
-    html += `<ul class="opts">`;
-    q.options.forEach((opt,idx)=>{
-      let cls="opt";
-      if(idx===q.answer) cls+=" correct";
-      else if(idx===chosen) cls+=" wrong";
-      html += `<li class="${cls}" aria-disabled="true"><span class="key">${String.fromCharCode(65+idx)}</span><span class="txt">${opt}</span></li>`;
-    });
-    html += `</ul>`;
-    const label = chosen===null ? `<b>Not answered.</b> ` : (chosen===q.answer ? `<b>Correct.</b> ` : `<b>Your answer: ${String.fromCharCode(65+chosen)}.</b> `);
-    html += `<div class="explain">${label}${q.explain}</div></div>`;
-  });
-
-  html += `<div style="margin-top:34px"><button class="btn primary block" id="retryBtn" style="margin-left:0">Retake the test</button></div>`;
+  html += `</div><div class="note" style="margin-top:30px">Thank you for completing the assessment. Your responses have been submitted to the hiring team.</div>`;
 
   screens.results.innerHTML = html;
   show("results");
@@ -628,7 +607,6 @@ function finish(){
     if(arc){ arc.style.transition="stroke-dashoffset 1s cubic-bezier(.2,.7,.2,1)"; arc.style.strokeDashoffset=off.toFixed(1); }
   });});
 
-  $("retryBtn").addEventListener("click", reset);
 }
 
 function reset(){

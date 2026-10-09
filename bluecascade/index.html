@@ -957,18 +957,6 @@ function renderResults(R){
         }).join("")}
       </div>
 
-      <div class="review">
-        <div class="review-head">
-          <h3>Answer review</h3>
-          <div class="rev-filter">
-            <button class="on" data-filter="all">All</button>
-            <button data-filter="wrong">Incorrect</button>
-            <button data-filter="right">Correct</button>
-          </div>
-        </div>
-        <div id="revList">${reviewListHTML(R,"all")}</div>
-      </div>
-
       <div class="res-actions">
         <button class="btn btn-ghost" id="againBtn">Take a new attempt</button>
         <button class="btn btn-primary" id="doneBtn">Finish & exit</button>
@@ -979,9 +967,6 @@ function renderResults(R){
   wireTop();
   // animate ring
   requestAnimationFrame(()=>{ const c=app.querySelectorAll(".score-ring circle")[1]; if(c){ c.setAttribute("stroke-dasharray",`0 ${circ}`); requestAnimationFrame(()=>c.setAttribute("stroke-dasharray",`${dash} ${circ}`)); }});
-  app.querySelectorAll(".rev-filter button").forEach(b=>{
-    b.onclick=()=>{ app.querySelectorAll(".rev-filter button").forEach(x=>x.classList.remove("on")); b.classList.add("on"); $("#revList").innerHTML=reviewListHTML(R,b.dataset.filter); };
-  });
   $("#againBtn").onclick=async ()=>{
     const go=await confirmModal({title:"Start a fresh attempt?",body:"This clears your current results and generates a new randomized test.",ok:"New attempt",icon:"🔄"});
     if(go){ store.clear(); S=null; renderLogin(); window.scrollTo(0,0); }
