@@ -89,6 +89,7 @@
         <option value="">All tests</option>
         <option value="aptitude">Aptitude</option>
         <option value="bluecascade">BlueCascade</option>
+        <option value="games">Games</option>
       </select>
       <select id="passFilter">
         <option value="">Any result</option>
@@ -198,13 +199,15 @@ function render(){
     let html = `<tr class="row" data-id="${esc(d.id)}">
       <td>${esc(fmtDate(d.created_at))}</td><td>${esc(d.candidate_name)}</td><td>${esc(d.candidate_email)}</td>
       <td><span class="pill">${esc(d.test)}</span></td>
-      <td><b>${esc(d.score)}%</b> <small style="color:var(--muted)">${esc(d.points)}/${esc(d.total)}</small></td>
+      <td><b>${esc(d.score)}%</b> ${d.total!=null?`<small style="color:var(--muted)">${esc(d.points)}/${esc(d.total)}</small>`:""}</td>
       <td class="${pass?"pass":"fail"}">${pass?"Passed":"Not passed"}</td>
       <td>${d.tab_switches==null?"—":esc(d.tab_switches)}</td><td>${fmtDur(d.duration_sec)}</td></tr>`;
     if(open===d.id){
       const items = Array.isArray(d.answers) ? d.answers : [];
+      const secs = (!Array.isArray(d.answers) && d.answers && typeof d.answers==="object") ? Object.entries(d.answers) : [];
       html += `<tr class="detail"><td colspan="8">
         <small>ID: ${esc(d.candidate_id||"—")} · Invite code: ${esc(d.invite_code||"—")}</small>
+        ${secs.length ? `<div class="ans">${secs.map(([k,v])=>`<div class="a"><span><b>${esc(k)}</b>: ${esc(v)}%</span></div>`).join("")}</div>` : ""}
         <div class="ans">${items.map((a,i)=>`<div class="a"><i class="${a.correct?"ok":"no"}">${a.correct?"✓":"✕"}</i>
           <span>${i+1}. ${esc(a.question)} <small>[${esc(a.section)}] — answer: ${esc(JSON.stringify(a.response))}</small></span></div>`).join("") || "<small>No answer detail.</small>"}</div>
       </td></tr>`;

@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>BlueCascade — Cognitive &amp; Behavioural Assessment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0F0A1A; --card:#1A1228; --card-2:#221830;
+  --ink:#F0EBF8; --soft:#A89BC2; --muted:#6B6080;
+  --purple:#9B59FF; --purple-2:#7B3FE4; --purple-glow:rgba(155,89,255,.2);
+  --violet:#C084FC; --pink:#F472B6; --cyan:#22D3EE;
+  --green:#4ADE80; --red:#F87171; --gold:#FBBF24;
+  --line:rgba(155,89,255,.2); --r:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow-x:hidden;}
+body{font-family:"DM Sans",system-ui,sans-serif;background:var(--bg);color:var(--ink);
+  -webkit-font-smoothing:antialiased;min-height:100dvh;}
+
+/* STARS BG */
+.stars{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;}
+.star{position:absolute;border-radius:50%;background:#fff;animation:twinkle ease-in-out infinite;}
+@keyframes twinkle{0%,100%{opacity:.1;transform:scale(1)}50%{opacity:.7;transform:scale(1.4)}}
+
+/* TOP */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(15,10,26,.85);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--line);padding:10px 24px;
+  display:flex;align-items:center;justify-content:space-between;}
+.logo .b{font-family:"Playfair Display",serif;font-size:18px;color:var(--purple);}
+.logo .c{font-family:"Playfair Display",serif;font-size:18px;color:var(--ink);}
+.game-tracker{display:flex;align-items:center;gap:6px;}
+.gt-dot{width:10px;height:10px;border-radius:50%;background:var(--muted);
+  transition:all .4s cubic-bezier(.34,1.56,.64,1);}
+.gt-dot.done{background:var(--purple);box-shadow:0 0 8px var(--purple);}
+.gt-dot.active{background:var(--violet);box-shadow:0 0 12px var(--violet);
+  animation:activePulse 1.5s infinite;transform:scale(1.3);}
+@keyframes activePulse{0%,100%{box-shadow:0 0 8px var(--violet)}50%{box-shadow:0 0 20px var(--violet)}}
+
+/* STAGE */
+.stage{max-width:640px;margin:0 auto;padding:72px 20px 48px;position:relative;z-index:1;}
+
+/* SCREENS */
+.screen{display:none;}
+.screen.on{display:flex;flex-direction:column;align-items:center;
+  animation:fadeUp .5s cubic-bezier(.2,.8,.2,1) both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  padding:32px 28px;width:100%;box-shadow:0 0 60px rgba(155,89,255,.08);}
+
+/* TYPOGRAPHY */
+h1{font-family:"Playfair Display",serif;font-size:clamp(36px,8vw,52px);
+  line-height:1.05;letter-spacing:-1px;text-align:center;margin-bottom:14px;}
+h1 em{color:var(--purple);font-style:normal;}
+h2{font-family:"Playfair Display",serif;font-size:clamp(24px,6vw,34px);
+  line-height:1.1;margin-bottom:10px;text-align:center;}
+.sub{font-size:16px;color:var(--soft);text-align:center;max-width:42ch;
+  margin:0 auto 28px;line-height:1.65;}
+.label{font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+  color:var(--muted);margin-bottom:8px;}
+.game-label{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.6px;
+  text-transform:uppercase;color:var(--purple);background:var(--purple-glow);
+  border-radius:999px;padding:4px 14px;margin-bottom:16px;}
+
+/* GAME INFO CARDS */
+.game-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;margin-bottom:28px;}
+.game-card{background:var(--card-2);border:1px solid var(--line);border-radius:14px;
+  padding:18px 16px;text-align:center;transition:transform .3s,box-shadow .3s;}
+.game-card:hover{transform:translateY(-3px);box-shadow:0 8px 32px var(--purple-glow);}
+.game-card .icon{font-size:32px;margin-bottom:8px;display:flex;justify-content:center;}
+.game-card .name{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:4px;}
+.game-card .trait{font-size:12px;color:var(--muted);}
+
+/* FORM */
+.field{font-family:"DM Sans",sans-serif;font-size:15px;padding:13px 16px;
+  border:1.5px solid var(--line);border-radius:12px;background:rgba(255,255,255,.04);
+  color:var(--ink);outline:none;width:100%;margin-top:8px;margin-bottom:16px;
+  transition:border-color .2s,box-shadow .2s;}
+.field:focus{border-color:var(--purple);box-shadow:0 0 0 3px var(--purple-glow);}
+.field::placeholder{color:var(--muted);}
+
+/* BUTTONS */
+.btn{font-family:"DM Sans",sans-serif;font-size:15px;font-weight:700;border:none;
+  cursor:pointer;border-radius:12px;padding:14px 30px;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,var(--purple),var(--purple-2));color:#fff;
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s;
+  box-shadow:0 4px 24px rgba(155,89,255,.4);}
+.btn:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 10px 36px rgba(155,89,255,.5);}
+.btn:active{transform:scale(.95);transition:transform .1s;}
+.btn:disabled{opacity:.3;cursor:not-allowed;transform:none;box-shadow:none;}
+.btn-outline{background:none;border:1.5px solid var(--purple);color:var(--purple);box-shadow:none;}
+.btn-outline:hover{background:var(--purple-glow);box-shadow:none;}
+.btn-big{font-size:18px;padding:18px 44px;border-radius:14px;
+  box-shadow:0 6px 32px rgba(155,89,255,.5);}
+
+/* ═══════════ BEHAVIOURAL MINI-GAMES ═══════════ */
+/* shared HUD + feedback */
+.ghud{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;}
+.chip{background:var(--card-2);border:1px solid var(--line);border-radius:999px;
+  padding:6px 15px;display:flex;align-items:center;gap:7px;justify-content:center;}
+.chip .v{font-family:"Playfair Display",serif;font-size:18px;font-weight:700;color:var(--purple);line-height:1;}
+.chip .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.chip.combo .v{color:var(--gold);} .chip.lives .v{color:var(--pink);} .chip.morale .v{color:var(--green);}
+.timebar{width:100%;height:6px;background:var(--card-2);border-radius:3px;overflow:hidden;margin-bottom:18px;}
+.timebar-fill{height:100%;width:100%;border-radius:3px;background:linear-gradient(90deg,var(--purple),var(--pink));}
+.verdict{font-size:15px;font-weight:600;text-align:center;min-height:22px;margin-top:16px;
+  line-height:1.5;max-width:46ch;margin-left:auto;margin-right:auto;}
+.verdict.good{color:var(--green);} .verdict.bad{color:var(--red);}
+.verdict:not(:empty){animation:fadeIn .25s ease;}
+.combo-pop{position:fixed;left:50%;top:38%;transform:translateX(-50%);z-index:150;
+  font-family:"Playfair Display",serif;font-weight:700;font-size:32px;pointer-events:none;
+  color:var(--gold);animation:comboPop .7s ease-out forwards;}
+@keyframes comboPop{0%{opacity:0;transform:translate(-50%,10px) scale(.6)}
+  25%{opacity:1;transform:translate(-50%,-6px) scale(1.1)}100%{opacity:0;transform:translate(-50%,-40px) scale(1)}}
+
+/* RISK TRIAGE */
+.triage-card{background:var(--card-2);border:1px solid var(--line);border-radius:16px;
+  padding:24px 20px;margin-bottom:18px;width:100%;min-height:120px;display:flex;
+  flex-direction:column;justify-content:center;}
+.triage-card .tag{font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;
+  color:var(--soft);margin-bottom:8px;}
+.triage-card .txt{font-size:17px;line-height:1.5;color:var(--ink);}
+.triage-card.fly-0{animation:flyLeft .4s ease forwards;}
+.triage-card.fly-1{animation:flyUp .4s ease forwards;}
+.triage-card.fly-2{animation:flyRight .4s ease forwards;}
+@keyframes flyLeft{to{transform:translateX(-120%) rotate(-8deg);opacity:0}}
+@keyframes flyRight{to{transform:translateX(120%) rotate(8deg);opacity:0}}
+@keyframes flyUp{to{transform:translateY(-55%) scale(.8);opacity:0}}
+.triage-bins{display:flex;gap:10px;width:100%;}
+.bin{flex:1;cursor:pointer;border-radius:14px;padding:16px 8px;text-align:center;font-weight:700;
+  font-size:15px;border:2px solid var(--line);background:var(--card-2);color:var(--ink);
+  transition:transform .15s,background .15s;font-family:"DM Sans",sans-serif;}
+.bin .bi{font-size:22px;display:block;margin-bottom:4px;}
+.bin.low{border-color:rgba(74,222,128,.5);} .bin.low:not(:disabled):hover{background:rgba(74,222,128,.12);transform:translateY(-3px);}
+.bin.mon{border-color:rgba(251,191,36,.5);} .bin.mon:not(:disabled):hover{background:rgba(251,191,36,.12);transform:translateY(-3px);}
+.bin.esc{border-color:rgba(248,113,113,.5);} .bin.esc:not(:disabled):hover{background:rgba(248,113,113,.12);transform:translateY(-3px);}
+.bin:disabled{opacity:.5;cursor:default;}
+
+/* RED LINE */
+.rl-item{background:var(--card-2);border:1px solid var(--line);border-radius:16px;
+  padding:26px 20px;margin-bottom:18px;width:100%;min-height:118px;display:flex;align-items:center;
+  justify-content:center;text-align:center;font-size:17px;line-height:1.45;color:var(--ink);}
+.rl-item.in{animation:slideIn .3s cubic-bezier(.34,1.56,.64,1);}
+@keyframes slideIn{from{transform:translateY(14px) scale(.96);opacity:0}to{transform:none;opacity:1}}
+.rl-item.go-1{animation:flyRight .35s ease forwards;}
+.rl-item.go-0{animation:flyLeft .35s ease forwards;}
+.rl-zones{display:flex;gap:12px;width:100%;}
+.rl-zone{flex:1;cursor:pointer;border-radius:14px;padding:18px 10px;text-align:center;font-weight:700;
+  font-size:15px;border:2px solid var(--line);background:var(--card-2);color:var(--ink);
+  transition:transform .12s,background .12s;font-family:"DM Sans",sans-serif;}
+.rl-zone .z{font-size:22px;display:block;margin-bottom:4px;}
+.rl-zone.cross{border-color:rgba(248,113,113,.5);} .rl-zone.cross:not(:disabled):hover{background:rgba(248,113,113,.12);transform:translateY(-3px);}
+.rl-zone.ok{border-color:rgba(74,222,128,.5);} .rl-zone.ok:not(:disabled):hover{background:rgba(74,222,128,.12);transform:translateY(-3px);}
+
+/* CULTURE POP */
+.morale-track{width:100%;height:12px;background:var(--card-2);border:1px solid var(--line);
+  border-radius:8px;overflow:hidden;margin-bottom:16px;}
+.morale-fill{height:100%;width:50%;border-radius:8px;transition:width .3s ease;
+  background:linear-gradient(90deg,var(--green),var(--cyan));}
+.pop-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%;max-width:340px;}
+.pop-slot{aspect-ratio:1;border-radius:16px;background:var(--card-2);border:1px dashed rgba(155,89,255,.18);
+  position:relative;overflow:hidden;}
+.pop-token{position:absolute;inset:5px;border-radius:12px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:3px;cursor:pointer;padding:5px;text-align:center;
+  animation:popUp .18s cubic-bezier(.34,1.56,.64,1);}
+@keyframes popUp{from{transform:scale(0)}to{transform:scale(1)}}
+.pop-token.leave{animation:popDown .18s ease forwards;}
+@keyframes popDown{to{transform:scale(0);opacity:0}}
+.pop-token .emo{font-size:28px;line-height:1;}
+.pop-token .lab{font-size:9.5px;font-weight:700;line-height:1.1;}
+.pop-token.wrong{background:rgba(248,113,113,.3);border:1.5px solid var(--red);color:var(--red);animation:shake .3s ease;}
+.pop-token.neutral{background:rgba(155,89,255,.16);border:1.5px solid var(--violet);color:var(--ink);}
+.pop-token.good{background:rgba(74,222,128,.16);border:1.5px solid var(--green);color:var(--green);}
+.pop-token.bad{background:rgba(248,113,113,.16);border:1.5px solid var(--red);color:var(--red);}
+
+/* COLOUR CLASH (Stroop) */
+.cc-word{font-family:"Playfair Display",serif;font-weight:900;font-size:clamp(64px,18vw,104px);letter-spacing:2px;
+  text-align:center;line-height:1.1;margin:6px 0 22px;min-height:1.15em;user-select:none;
+  text-shadow:0 0 28px rgba(0,0,0,.35);}
+.cc-word.pop{animation:fadeIn .15s ease;}
+.cc-btns{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:420px;}
+.cc-btn{cursor:pointer;border-radius:14px;padding:20px 8px;font-size:17px;font-weight:800;letter-spacing:1px;
+  color:#0F0A1A;border:3px solid transparent;transition:transform .08s ease,filter .15s;}
+.cc-btn:active{transform:scale(.96);}
+.cc-btn:disabled{filter:grayscale(.6) brightness(.7);cursor:default;}
+.cc-btn.red{background:#F87171;} .cc-btn.green{background:#4ADE80;}
+.cc-btn.blue{background:#60A5FA;} .cc-btn.yellow{background:#FBBF24;}
+
+/* shared stat styles (also used by Number Crunch) */
+.stat-row{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;}
+.stat{background:var(--card-2);border:1px solid var(--line);border-radius:12px;
+  padding:12px 20px;text-align:center;min-width:90px;}
+.stat .val{font-family:"Playfair Display",serif;font-size:26px;font-weight:700;color:var(--purple);}
+.stat .lbl{font-size:12px;color:var(--muted);}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+/* ─── GAME 2: MEMORY ─── */
+.memory-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;max-width:360px;}
+.mem-tile{aspect-ratio:1;border-radius:12px;background:var(--card-2);
+  border:2px solid var(--line);cursor:pointer;
+  transition:all .2s cubic-bezier(.34,1.56,.64,1);position:relative;overflow:hidden;}
+.mem-tile.lit{background:var(--purple);border-color:var(--violet);
+  box-shadow:0 0 24px var(--purple-glow);transform:scale(1.06);}
+.mem-tile.correct{background:var(--green);border-color:var(--green);}
+.mem-tile.wrong{background:var(--red);border-color:var(--red);animation:shake .3s ease;}
+.mem-tile.disabled{cursor:not-allowed;opacity:.5;}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.mem-tile-num{position:absolute;inset:0;display:flex;align-items:center;
+  justify-content:center;font-size:18px;font-weight:700;opacity:0;transition:.2s;}
+.mem-tile.lit .mem-tile-num{opacity:1;}
+.round-badge{display:flex;align-items:center;justify-content:center;gap:6px;
+  font-size:14px;font-weight:600;color:var(--soft);margin-bottom:16px;}
+.round-badge span{background:var(--purple-glow);color:var(--purple);border-radius:999px;
+  padding:2px 12px;font-weight:700;}
+
+/* ─── GAME 4: PATTERN ─── */
+.pattern-pair{display:flex;align-items:center;gap:20px;justify-content:center;
+  flex-wrap:wrap;margin-bottom:24px;}
+.pattern-box{background:var(--card-2);border:1px solid var(--line);border-radius:14px;
+  padding:14px;width:140px;height:140px;display:grid;grid-template-columns:repeat(4,1fr);
+  gap:4px;}
+.pcell{border-radius:4px;background:var(--muted);opacity:.15;transition:.15s;}
+.pcell.on{background:var(--purple);opacity:1;box-shadow:0 0 8px var(--purple-glow);}
+.vs{font-family:"Playfair Display",serif;font-size:20px;color:var(--muted);}
+.pattern-timer{width:100%;height:5px;background:var(--card-2);border-radius:3px;overflow:hidden;margin-bottom:20px;}
+.pattern-timer-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--pink));
+  border-radius:3px;transition:width linear;}
+.pattern-answer-btns{display:flex;gap:12px;justify-content:center;}
+.pat-btn{font-size:16px;font-weight:700;border:none;cursor:pointer;border-radius:12px;
+  padding:14px 32px;transition:all .2s cubic-bezier(.34,1.56,.64,1);}
+.pat-btn.yes{background:rgba(74,222,128,.15);color:var(--green);border:2px solid var(--green);}
+.pat-btn.no{background:rgba(248,113,113,.15);color:var(--red);border:2px solid var(--red);}
+.pat-btn:hover{transform:scale(1.06);}
+.pat-btn:active{transform:scale(.94);}
+.pat-result{font-size:28px;text-align:center;animation:popIn .4s cubic-bezier(.34,1.56,.64,1);}
+@keyframes popIn{from{transform:scale(0)}to{transform:scale(1)}}
+
+/* ─── GAME 5: EMOTION ─── */
+.emotion-scene{background:var(--card-2);border:1px solid var(--line);border-radius:16px;
+  padding:24px;margin-bottom:22px;text-align:center;}
+.emotion-face{width:100%;margin:0 auto 12px;animation:fadeIn .35s ease;}
+.sn-scene{display:block;width:100%;max-width:420px;height:auto;margin:0 auto;border-radius:12px;border:2px solid var(--violet);
+  box-shadow:0 6px 28px rgba(155,89,255,.28);}
+.sn-scene *{transform-box:view-box;}
+@keyframes sn-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes sn-slide{0%,12%{transform:translateX(0)}50%,80%{transform:translateX(100px)}100%{transform:translateX(0)}}
+@keyframes sn-stamp{0%,18%{transform:translateY(-70px) scale(1.7);opacity:0}30%{transform:translateY(0) scale(1);opacity:1}86%{opacity:1}100%{opacity:0}}
+@keyframes sn-spin{to{transform:rotate(360deg)}}
+@keyframes sn-twinkle{0%,100%{opacity:.3}50%{opacity:1}}
+@keyframes sn-rise{0%,15%{transform:translateY(0)}45%,80%{transform:translateY(-30px)}100%{transform:translateY(0)}}
+@keyframes sn-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.25)}}
+@keyframes sn-tick{0%,20%{opacity:0}30%,90%{opacity:1}100%{opacity:0}}
+@keyframes sn-pop{0%,25%{transform:scale(0);opacity:0}40%,85%{transform:scale(1);opacity:1}100%{transform:scale(0);opacity:0}}
+@keyframes sn-alt{0%,45%{opacity:1}55%,100%{opacity:.15}}
+@keyframes sn-fall{0%{transform:translateY(-20px) rotate(0);opacity:1}100%{transform:translateY(190px) rotate(540deg);opacity:.9}}
+@keyframes sn-blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes sn-env{0%{transform:translateX(90px);opacity:0}25%,100%{transform:translateX(0);opacity:1}}
+@keyframes facePop{from{transform:scale(0) rotate(-15deg)}to{transform:scale(1) rotate(0)}}
+.emotion-desc{font-size:16px;color:var(--soft);line-height:1.6;max-width:38ch;margin:0 auto;}
+.emotion-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.emo-btn{font-size:15px;font-weight:600;border:none;cursor:pointer;border-radius:12px;
+  padding:14px 16px;background:var(--card-2);color:var(--ink);
+  border:1.5px solid var(--line);transition:all .2s cubic-bezier(.34,1.56,.64,1);}
+.emo-btn:hover{border-color:var(--purple);background:var(--purple-glow);transform:scale(1.03);}
+.emo-btn.correct{background:rgba(74,222,128,.15);border-color:var(--green);color:var(--green);}
+.emo-btn.wrong{background:rgba(248,113,113,.15);border-color:var(--red);color:var(--red);}
+.emo-btn.picked{background:var(--purple-glow);border-color:var(--purple);color:var(--violet);}
+
+/* PROGRESS DOTS (within a game) */
+.dots{display:flex;gap:6px;justify-content:center;margin-bottom:20px;}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:.3s;}
+.dot.done{background:var(--purple);}
+.dot.active{background:var(--violet);transform:scale(1.3);}
+
+/* SCORE REVEAL */
+.score-ring{width:120px;height:120px;position:relative;margin:0 auto 24px;}
+.score-ring svg{width:100%;height:100%;transform:rotate(-90deg);}
+.score-ring circle{fill:none;stroke-width:8;stroke-linecap:round;}
+.ring-bg{stroke:var(--card-2);}
+.ring-fill{stroke:var(--purple);stroke-dasharray:314;stroke-dashoffset:314;
+  transition:stroke-dashoffset 1.2s cubic-bezier(.2,.8,.2,1);}
+.score-num{position:absolute;inset:0;display:flex;align-items:center;
+  justify-content:center;font-family:"Playfair Display",serif;
+  font-size:30px;font-weight:700;color:var(--purple);}
+.trait-bars{width:100%;display:flex;flex-direction:column;gap:14px;margin:24px 0;}
+.trait-row{display:flex;align-items:center;gap:12px;}
+.trait-name{font-size:13px;font-weight:600;width:130px;flex:none;color:var(--soft);}
+.trait-track{flex:1;height:8px;background:var(--card-2);border-radius:4px;overflow:hidden;}
+.trait-fill{height:100%;border-radius:4px;width:0;
+  transition:width 1s cubic-bezier(.2,.8,.2,1);}
+.trait-val{font-size:13px;font-weight:700;width:36px;text-align:right;color:var(--ink);}
+
+/* CONFETTI */
+.confetti-wrap{position:fixed;inset:0;pointer-events:none;z-index:200;overflow:hidden;}
+.cp{position:absolute;animation:fall linear forwards;}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:0;}}
+
+/* UTIL */
+.center{text-align:center;}
+.mt{margin-top:20px;}
+.row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px;}
+.glow-text{background:linear-gradient(135deg,var(--purple),var(--violet));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+
+@keyframes tagIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+@media(max-width:520px){
+  .stage{padding:64px 14px 44px;}
+  .card{padding:22px 16px;}
+  .game-grid{grid-template-columns:1fr 1fr;}
+  .pattern-box{width:120px;height:120px;}
+  .pattern-pair{gap:12px;}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+
+/* ═══════════ FOCUS GUARD (fullscreen + tab-switch warning) ═══════════ */
+.guard{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;
+  background:rgba(8,5,16,.94);backdrop-filter:blur(6px);padding:24px;}
+.guard.on{display:flex;}
+.guard-box{max-width:440px;width:100%;text-align:center;background:var(--card);border:2px solid var(--red);
+  border-radius:20px;padding:32px 26px;box-shadow:0 0 60px rgba(248,113,113,.3);animation:fadeIn .25s ease;}
+.guard-box .gi{font-size:44px;margin-bottom:10px;}
+.guard-box h3{font-family:"Playfair Display",serif;font-size:26px;color:var(--ink);margin-bottom:10px;}
+.guard-box p{font-size:15px;line-height:1.6;color:var(--soft);margin-bottom:8px;}
+.guard-box .cnt{font-weight:700;color:var(--red);margin-bottom:18px;}
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+<div class="confetti-wrap" id="confetti"></div>
+
+<div class="topbar">
+  <div class="logo"><span class="b">blue</span><span class="c">cascade</span></div>
+  <div class="game-tracker" id="game-tracker"></div>
+</div>
+
+<div class="guard" id="guard">
+  <div class="guard-box">
+    <div class="gi">&#9888;&#65039;</div>
+    <h3 id="guard-title">You left the assessment</h3>
+    <p id="guard-msg">Switching tabs or leaving full screen during the assessment is not allowed. This has been recorded.</p>
+    <p class="cnt" id="guard-cnt"></p>
+    <button class="btn" onclick="guardReturn()">Return to full screen</button>
+  </div>
+</div>
+
+<div class="stage">
+
+<!-- ═══ START ═══ -->
+<section class="screen on" id="s-start">
+  <p class="game-label">Cognitive &amp; Behavioural Assessment</p>
+  <h1><em>Eight games.</em><br>One profile.</h1>
+  <p class="sub">Each game takes about 2–3 minutes. Together they map how you think and how you handle real workplace moments — judgment, not just knowledge.</p>
+  <div class="game-grid">
+    <div class="game-card"><div class="icon"><svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="bg1" cx="35%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="#C084FC"/>
+          <stop offset="100%" stop-color="#7B3FE4"/>
+        </radialGradient>
+      </defs>
+      <circle cx="26" cy="26" r="22" fill="url(#bg1)"/>
+      <circle cx="26" cy="26" r="15" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
+      <circle cx="26" cy="26" r="8" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="1.5"/>
+      <path d="M26 26 L26 4 A22 22 0 0 1 44 18 Z" fill="rgba(255,255,255,0.18)"/>
+      <line x1="26" y1="26" x2="35" y2="17" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+      <circle cx="35" cy="17" r="2.6" fill="#fff"/>
+    </svg></div><div class="name">Risk Triage</div><div class="trait">Risk management</div></div>
+    <div class="game-card"><div class="icon"><svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="bg2" cx="35%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="#60A5FA"/>
+          <stop offset="100%" stop-color="#2563EB"/>
+        </radialGradient>
+      </defs>
+      <rect x="6" y="8" width="40" height="36" rx="8" fill="url(#bg2)"/>
+      <rect x="6" y="8" width="40" height="36" rx="8" fill="rgba(255,255,255,0.08)"/>
+      <rect x="10" y="14" width="10" height="10" rx="3" fill="rgba(255,255,255,0.9)"/>
+      <rect x="24" y="14" width="10" height="10" rx="3" fill="rgba(255,255,255,0.4)"/>
+      <rect x="10" y="28" width="10" height="10" rx="3" fill="rgba(255,255,255,0.4)"/>
+      <rect x="24" y="28" width="10" height="10" rx="3" fill="rgba(255,255,255,0.9)"/>
+      <rect x="38" y="14" width="6" height="6" rx="2" fill="rgba(255,255,255,0.2)"/>
+      <rect x="38" y="28" width="6" height="6" rx="2" fill="rgba(255,255,255,0.2)"/>
+      <rect x="6" y="8" width="40" height="12" rx="8" fill="rgba(255,255,255,0.06)"/>
+    </svg></div><div class="name">Memory Tiles</div><div class="trait">Working memory</div></div>
+        <div class="game-card"><div class="icon"><svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="bg4" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#34D399"/>
+          <stop offset="100%" stop-color="#059669"/>
+        </linearGradient>
+      </defs>
+      <rect x="4" y="4" width="20" height="20" rx="5" fill="url(#bg4)"/>
+      <rect x="28" y="4" width="20" height="20" rx="5" fill="url(#bg4)" opacity="0.7"/>
+      <rect x="4" y="28" width="20" height="20" rx="5" fill="url(#bg4)" opacity="0.7"/>
+      <rect x="28" y="28" width="20" height="20" rx="5" fill="url(#bg4)"/>
+      <rect x="4" y="4" width="20" height="8" rx="5" fill="rgba(255,255,255,0.15)"/>
+      <rect x="28" y="4" width="20" height="8" rx="5" fill="rgba(255,255,255,0.1)"/>
+    </svg></div><div class="name">Pattern Match</div><div class="trait">Logical reasoning</div></div>
+    <div class="game-card"><div class="icon"><svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="bg5" cx="35%" cy="30%" r="65%">
+          <stop offset="0%" stop-color="#FB923C"/>
+          <stop offset="100%" stop-color="#EA580C"/>
+        </radialGradient>
+      </defs>
+      <circle cx="26" cy="26" r="22" fill="url(#bg5)"/>
+      <ellipse cx="19" cy="18" rx="4" ry="2.5" fill="rgba(255,255,255,0.3)"/>
+      <circle cx="20" cy="23" r="3" fill="rgba(30,10,5,0.7)"/>
+      <circle cx="32" cy="23" r="3" fill="rgba(30,10,5,0.7)"/>
+      <path d="M18 32 Q26 39 34 32" stroke="rgba(30,10,5,0.8)" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+    </svg></div><div class="name">Snap Read</div><div class="trait">Emotional intelligence</div></div>
+        <div class="game-card"><div class="icon"><svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="bg7" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#22D3EE"/>
+          <stop offset="100%" stop-color="#0E7490"/>
+        </linearGradient>
+      </defs>
+      <rect x="4" y="4" width="44" height="44" rx="10" fill="url(#bg7)"/>
+      <rect x="4" y="4" width="44" height="14" rx="10" fill="rgba(255,255,255,0.12)"/>
+      <text x="14" y="22" fill="rgba(255,255,255,0.9)" font-size="11" font-weight="700" font-family="DM Sans,sans-serif">1 2</text>
+      <text x="14" y="34" fill="rgba(255,255,255,0.9)" font-size="11" font-weight="700" font-family="DM Sans,sans-serif">3 4</text>
+      <text x="30" y="22" fill="rgba(255,255,255,0.5)" font-size="11" font-weight="700" font-family="DM Sans,sans-serif">+</text>
+      <text x="30" y="34" fill="rgba(255,255,255,0.5)" font-size="11" font-weight="700" font-family="DM Sans,sans-serif">=</text>
+    </svg></div><div class="name">Number Crunch</div><div class="trait">Numerical speed</div></div>
+    <div class="game-card"><div class="icon"><svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs><linearGradient id="bgB" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#60A5FA"/><stop offset="100%" stop-color="#2563EB"/></linearGradient></defs>
+      <path d="M26 4 L44 11 V26 C44 37 36 45 26 48 C16 45 8 37 8 26 V11 Z" fill="url(#bgB)"/>
+      <path d="M26 4 L44 11 V18 L8 18 V11 Z" fill="rgba(255,255,255,0.12)"/>
+      <path d="M18 26 L24 32 L35 20" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg></div><div class="name">Red Line</div><div class="trait">Professional boundaries</div></div>
+    <div class="game-card"><div class="icon"><svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs><linearGradient id="bgC" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#2DD4BF"/><stop offset="100%" stop-color="#0D9488"/></linearGradient></defs>
+      <rect x="4" y="4" width="44" height="44" rx="12" fill="url(#bgC)"/>
+      <circle cx="19" cy="20" r="6" fill="#fff"/>
+      <circle cx="33" cy="20" r="6" fill="rgba(255,255,255,0.75)"/>
+      <path d="M9 41 C9 31 15 28 19 28 C23 28 29 31 29 41 Z" fill="#fff"/>
+      <path d="M23 41 C23 31 29 28 33 28 C37 28 43 31 43 41 Z" fill="rgba(255,255,255,0.75)"/>
+    </svg></div><div class="name">Culture Pop</div><div class="trait">Maintaining culture</div></div>
+    <div class="game-card"><div class="icon"><svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs><radialGradient id="bgD" cx="35%" cy="30%" r="70%">
+        <stop offset="0%" stop-color="#F0ABFC"/><stop offset="100%" stop-color="#C026D3"/></radialGradient></defs>
+      <circle cx="26" cy="26" r="22" fill="url(#bgD)"/>
+      <circle cx="26" cy="26" r="15" fill="none" stroke="#fff" stroke-width="2.5"/>
+      <circle cx="26" cy="26" r="8" fill="none" stroke="#fff" stroke-width="2.5"/>
+      <circle cx="26" cy="26" r="2.6" fill="#fff"/>
+    </svg></div><div class="name">Colour Clash</div><div class="trait">Discipline</div></div>
+      </div>
+  <div class="card" style="max-width:400px;">
+    <div class="label">Your details</div>
+    <input id="cand-name" class="field" type="text" placeholder="Full name" oninput="validateForm()">
+    <input id="cand-email" class="field" type="email" placeholder="Email address" oninput="validateForm()" style="margin-bottom:0;">
+  </div>
+  <div class="row">
+    <button class="btn btn-big" id="begin-btn" onclick="beginAll()" disabled>Begin the assessment</button>
+  </div>
+</section>
+
+<!-- ═══ GAME INTRO ═══ -->
+<section class="screen" id="s-intro">
+  <p class="game-label" id="intro-label"></p>
+  <h2 id="intro-title"></h2>
+  <p class="sub" id="intro-desc"></p>
+  <div class="card center" style="max-width:340px;">
+    <div style="font-size:72px;margin-bottom:12px;text-align:center;" id="intro-icon"></div>
+    <div class="label">What this measures</div>
+    <p style="font-size:16px;color:var(--soft);" id="intro-trait"></p>
+    <div style="margin-top:20px;">
+      <div class="label">Time</div>
+      <p style="font-size:16px;color:var(--ink);" id="intro-time"></p>
+    </div>
+  </div>
+  <div class="row mt">
+    <button class="btn" id="intro-start-btn" onclick="startCurrentGame()">Start game</button>
+  </div>
+</section>
+
+<!-- ═══ GAME 1: RISK TRIAGE ═══ -->
+<section class="screen" id="s-risk">
+  <p class="game-label">Game 1 — Risk Triage</p>
+  <p class="sub" style="margin-bottom:8px;">Sort each situation into the right risk bucket before the timer runs out.</p>
+  <div class="dots" id="risk-dots"></div>
+  <div class="timebar"><div class="timebar-fill" id="risk-time"></div></div>
+  <div class="triage-card" id="risk-card">
+    <span class="tag" id="risk-tag"></span>
+    <span class="txt" id="risk-scene"></span>
+  </div>
+  <div class="triage-bins" id="risk-bins">
+    <button class="bin low"  onclick="triagePick(0)"><span class="bi">🟢</span>Low risk</button>
+    <button class="bin mon"  onclick="triagePick(1)"><span class="bi">🟡</span>Monitor</button>
+    <button class="bin esc"  onclick="triagePick(2)"><span class="bi">🔴</span>Escalate</button>
+  </div>
+  <div class="verdict" id="risk-verdict"></div>
+</section>
+
+<!-- ═══ GAME 2: MEMORY ═══ -->
+<section class="screen" id="s-memory">
+  <p class="game-label">Game 2 — Memory Tiles</p>
+  <div class="round-badge">Round <span id="m-round">1</span> of 6 &nbsp;·&nbsp; Length <span id="m-len">3</span></div>
+  <p class="sub" style="margin-bottom:14px;" id="m-instruction">Watch the sequence</p>
+  <div class="memory-grid" id="memory-grid"></div>
+  <div style="margin-top:18px;font-size:15px;color:var(--soft);text-align:center;" id="m-status"></div>
+</section>
+
+<!-- ═══ GAME 4: PATTERN ═══ -->
+<section class="screen" id="s-pattern">
+  <p class="game-label">Game 3 — Pattern Match</p>
+  <p class="sub" style="margin-bottom:8px;">Do these two patterns match? Decide before time runs out!</p>
+  <div class="dots" id="p-dots"></div>
+  <div class="pattern-timer"><div class="pattern-timer-fill" id="p-timer-fill"></div></div>
+  <div class="pattern-pair">
+    <div class="pattern-box" id="p-left"></div>
+    <div class="vs">vs</div>
+    <div class="pattern-box" id="p-right"></div>
+  </div>
+  <div class="pat-result" id="p-result" style="min-height:40px;"></div>
+  <div class="pattern-answer-btns" id="p-btns">
+    <button class="pat-btn yes" onclick="patternAnswer(true)">Match</button>
+    <button class="pat-btn no" onclick="patternAnswer(false)">Different</button>
+  </div>
+</section>
+
+<!-- ═══ GAME 5: SNAP READ (EMOTION) ═══ -->
+<section class="screen" id="s-emotion">
+  <p class="game-label">Game 4 — Snap Read</p>
+  <p class="sub" style="margin-bottom:8px;">Read the emotion and lock in your answer before the bar runs out.</p>
+  <div class="dots" id="e-dots"></div>
+  <div class="timebar"><div class="timebar-fill" id="e-time"></div></div>
+  <div class="emotion-scene">
+    <div class="emotion-face" id="e-face"></div>
+    <p class="emotion-desc" id="e-desc"></p>
+  </div>
+  <p style="font-size:14px;font-weight:600;color:var(--muted);text-align:center;margin-bottom:12px;">What emotion is this?</p>
+  <div class="emotion-opts" id="emotion-opts"></div>
+  <div class="verdict" id="e-verdict"></div>
+</section>
+
+<!-- ═══ GAME 7: NUMBER CRUNCH ═══ -->
+<section class="screen" id="s-number">
+  <p class="game-label">Game 5 — Number Crunch</p>
+  <div class="round-badge">90 seconds &nbsp;·&nbsp; <span id="n-timer-txt" style="color:var(--gold);">1:30</span> remaining</div>
+  <div style="width:100%;height:5px;background:var(--card-2);border-radius:3px;overflow:hidden;margin-bottom:20px;">
+    <div id="n-bar" style="height:100%;background:linear-gradient(90deg,var(--cyan),var(--purple));border-radius:3px;transition:width linear;"></div>
+  </div>
+  <div class="card" style="width:100%;text-align:center;margin-bottom:18px;">
+    <p style="font-size:13px;font-weight:700;letter-spacing:.6px;color:var(--muted);margin-bottom:12px;">SOLVE AS FAST AS YOU CAN</p>
+    <div style="font-family:'Playfair Display',serif;font-size:clamp(28px,7vw,44px);font-weight:700;color:var(--ink);margin-bottom:4px;" id="n-question"></div>
+    <div style="font-size:14px;color:var(--muted);">= ?</div>
+  </div>
+  <input id="n-input" class="field" type="number" placeholder="Your answer..." style="text-align:center;font-size:22px;font-weight:700;" autocomplete="off">
+  <button class="btn" style="width:100%;margin-top:12px;" onclick="submitNumber()">Submit →</button>
+  <div style="display:none;">
+    <div class="stat"><div class="val" id="n-correct">0</div><div class="lbl">Correct</div></div>
+    <div class="stat"><div class="val" id="n-wrong">0</div><div class="lbl">Wrong</div></div>
+    <div class="stat"><div class="val" id="n-total">0</div><div class="lbl">Attempted</div></div>
+  </div>
+</section>
+
+<!-- ═══ GAME 8: RED LINE ═══ -->
+<section class="screen" id="s-boundaries">
+  <p class="game-label">Game 6 — Red Line</p>
+  <p class="sub" style="margin-bottom:8px;">Each behaviour flies in — send it the right way before the bar empties.</p>
+  <div class="dots" id="bd-dots"></div>
+  <div class="timebar"><div class="timebar-fill" id="bd-time"></div></div>
+  <div class="rl-item" id="bd-item"></div>
+  <div class="rl-zones" id="bd-zones">
+    <button class="rl-zone cross" onclick="redlinePick(0)"><span class="z">⛔</span>Crosses the line</button>
+    <button class="rl-zone ok"    onclick="redlinePick(1)"><span class="z">✅</span>Appropriate</button>
+  </div>
+  <div class="verdict" id="bd-verdict"></div>
+</section>
+
+<!-- ═══ GAME 9: CULTURE POP ═══ -->
+<section class="screen" id="s-culture">
+  <p class="game-label">Game 7 — Culture Pop</p>
+  <p class="sub" style="margin-bottom:8px;">Tap the moments that <strong>build</strong> the team. Leave the toxic ones alone.</p>
+  <div class="dots" id="cu-dots"></div>
+  <div class="ghud">
+    <div class="chip" style="display:none;"><span class="v" id="cu-score">0</span><span class="k">Caught</span></div>
+    <div class="chip"><span class="v" id="cu-time">30</span><span class="k">Seconds</span></div>
+    <div class="chip morale" style="display:none;"><span class="v" id="cu-morale">50</span><span class="k">Morale</span></div>
+  </div>
+  <div class="morale-track" style="display:none;"><div class="morale-fill" id="cu-morale-bar"></div></div>
+  <div class="pop-grid" id="cu-grid"></div>
+  <div class="verdict" id="cu-verdict" style="margin-top:14px;"></div>
+</section>
+
+<!-- ═══ GAME 10: COLOUR CLASH ═══ -->
+<section class="screen" id="s-discipline">
+  <p class="game-label">Game 8 — Colour Clash</p>
+  <p class="sub" style="margin-bottom:8px;">Tap the colour the word is <strong>printed in</strong> — ignore what it says. Discipline is overriding the easy reflex.</p>
+  <div class="dots" id="di-dots"></div>
+  <div class="ghud">
+    <div class="chip" style="display:none;"><span class="v" id="di-score">0</span><span class="k">Score</span></div>
+    <div class="chip"><span class="v" id="di-round">0/20</span><span class="k">Rounds</span></div>
+    <div class="chip lives" style="display:none;"><span class="v" id="di-slips">0</span><span class="k">Slips</span></div>
+  </div>
+  <div class="timebar"><div class="timebar-fill" id="di-time"></div></div>
+  <div class="cc-word" id="di-word">&nbsp;</div>
+  <div class="cc-btns" id="di-btns">
+    <button class="cc-btn red"    onclick="ccPick('red')">RED</button>
+    <button class="cc-btn green"  onclick="ccPick('green')">GREEN</button>
+    <button class="cc-btn blue"   onclick="ccPick('blue')">BLUE</button>
+    <button class="cc-btn yellow" onclick="ccPick('yellow')">YELLOW</button>
+  </div>
+  <div style="font-size:14px;color:var(--soft);text-align:center;min-height:20px;margin-top:12px;" id="di-status"></div>
+  <div class="verdict" id="di-verdict"></div>
+</section>
+
+<!-- ═══ RESULTS ═══ -->
+<section class="screen" id="s-result">
+  <p class="game-label">Assessment Complete</p>
+  <h2 class="glow-text">Your profile</h2>
+  <p class="sub">Here is what your performance across the games reveals.</p>
+  <div class="score-ring">
+    <svg viewBox="0 0 120 120"><circle class="ring-bg" cx="60" cy="60" r="50"/><circle class="ring-fill" id="ring-fill" cx="60" cy="60" r="50"/></svg>
+    <div class="score-num" id="overall-score">0%</div>
+  </div>
+  <div class="card" style="width:100%;">
+    <div class="trait-bars" id="trait-bars"></div>
+  </div>
+  <div class="card" style="width:100%;margin-top:14px;text-align:center;">
+    <p style="font-size:15px;color:var(--soft);line-height:1.7;">Your responses have been submitted. Our team will review your profile and be in touch shortly. You may close this tab.</p>
+  </div>
+</section>
+
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   BLUECASCADE COGNITIVE ASSESSMENT
+   Clean state machine — no patches
+═══════════════════════════════════════════════ */
+
+/* ── GAME SEQUENCE ── */
+var GAME_SEQUENCE = ["risk","memory","pattern","emotion","number","boundaries","culture","discipline"];
+var GAME_META = [
+  {name:"Risk Triage",     icon:"🧭", trait:"Risk Management",          time:"~2 min", desc:"Situation cards fly in — sort each into Low, Monitor or Escalate before the timer runs out. 8 cards."},
+  {name:"Memory Tiles",    icon:"🧠", trait:"Working Memory",           time:"~3 min", desc:"Watch tiles light up in a sequence. Tap them back in the same order. Gets longer each round. 6 rounds."},
+  {name:"Pattern Match",   icon:"🔷", trait:"Logical Reasoning",        time:"~3 min", desc:"Two grids appear. Are they identical or different? Decide before time runs out. 10 rounds."},
+  {name:"Snap Read",       icon:"🎭", trait:"Emotional Intelligence",   time:"~2 min", desc:"Read the emotion in each workplace moment and lock in your answer before the bar drains. 8 rounds."},
+  {name:"Number Crunch",   icon:"🔢", trait:"Numerical Speed",          time:"~3 min", desc:"Maths problems appear one by one. Type the answer and press Enter. 90 seconds total."},
+  {name:"Red Line",        icon:"🚧", trait:"Professional Boundaries",  time:"~2 min", desc:"Behaviours fly in fast — flick each one to Appropriate or Crosses-the-line before time runs out. 8 rounds."},
+  {name:"Culture Pop",     icon:"🤝", trait:"Maintaining Culture",      time:"~1 min", desc:"Whack-a-mole: tap the moments that build the team, leave the toxic ones alone. 30 seconds."},
+  {name:"Colour Clash",     icon:"🎨", trait:"Discipline",              time:"~2 min", desc:"A colour word appears in a different ink. Tap the colour it is PRINTED in, not the word it spells. 20 rounds."},
+];
+
+/* ── GLOBAL STATE ── */
+var candidateName  = "";
+var candidateEmail = "";
+var assessmentStart = 0;
+var currentGame    = -1;  // index into GAME_SEQUENCE
+var busy           = false; // master lock — prevents ANY double transitions
+var scores = {risk:0, memory:0, pattern:0, emotion:0, number:0,
+              boundaries:0, culture:0, discipline:0};
+
+/* ── ADVANCE GAME (single entry point for ALL transitions) ── */
+function advanceGame() {
+  if (busy) return;
+  busy = true;
+  currentGame++;
+  updateTracker();
+  setTimeout(function() {
+    if (currentGame < GAME_SEQUENCE.length) {
+      showIntroFor(currentGame);
+    } else {
+      showResults();
+    }
+    // release lock after transition is safely done
+    setTimeout(function() { busy = false; }, 1500);
+  }, 200);
+}
+
+/* ── STARS ── */
+(function() {
+  var s = document.getElementById("stars");
+  for (var i = 0; i < 80; i++) {
+    var d = document.createElement("div"); d.className = "star";
+    var sz = 1 + Math.random() * 2;
+    d.style.cssText = "width:"+sz+"px;height:"+sz+"px;top:"+Math.random()*100+"%;left:"+Math.random()*100+"%;"+
+      "animation-duration:"+(2+Math.random()*4)+"s;animation-delay:-"+(Math.random()*4)+"s;";
+    s.appendChild(d);
+  }
+})();
+
+/* ── TRACKER ── */
+(function() {
+  var t = document.getElementById("game-tracker");
+  GAME_SEQUENCE.forEach(function(_, i) {
+    var d = document.createElement("div"); d.className = "gt-dot"; d.id = "gtd"+i;
+    t.appendChild(d);
+  });
+})();
+
+function updateTracker() {
+  GAME_SEQUENCE.forEach(function(_, i) {
+    var d = document.getElementById("gtd"+i);
+    if (!d) return;
+    d.className = "gt-dot" + (i < currentGame ? " done" : i === currentGame ? " active" : "");
+  });
+}
+
+/* ── SCREENS ── */
+function show(id) {
+  document.querySelectorAll(".screen").forEach(function(s) { s.classList.remove("on"); });
+  var el = document.getElementById(id);
+  if (!el) { console.error("Screen not found:", id); return; }
+  el.classList.add("on");
+  el.style.animation = "none"; void el.offsetWidth; el.style.animation = "";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* ── VALIDATE ── */
+function validateForm() {
+  var n = document.getElementById("cand-name").value || "";
+  var e = document.getElementById("cand-email").value || "";
+  document.getElementById("begin-btn").disabled = n.trim().length < 2 || e.indexOf("@") === -1 || e.indexOf(".") === -1;
+}
+
+/* ── BEGIN ── */
+
+/* ═══════════════════════════════════════════════
+   FOCUS GUARD — full screen + tab-switch warning
+   Active from "Begin" until the results screen.
+═══════════════════════════════════════════════ */
+var guardOn=false, guardAway=false, tabSwitches=0;
+function enterFullscreen(){
+  var el=document.documentElement;
+  try{
+    var rq=el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen;
+    if(rq){ var r=rq.call(el); if(r&&r.catch) r.catch(function(){}); }
+  }catch(e){}
+}
+function exitFullscreen(){
+  try{
+    if(document.fullscreenElement||document.webkitFullscreenElement){
+      var ex=document.exitFullscreen||document.webkitExitFullscreen;
+      if(ex){ var r=ex.call(document); if(r&&r.catch) r.catch(function(){}); }
+    }
+  }catch(e){}
+}
+function inFullscreen(){ return !!(document.fullscreenElement||document.webkitFullscreenElement); }
+function guardTrip(kind){
+  if(!guardOn||guardAway) return;
+  guardAway=true; tabSwitches++;
+  document.getElementById("guard-title").textContent=(kind==="fullscreen")?"You left full screen":"You switched tabs";
+  document.getElementById("guard-msg").textContent=(kind==="fullscreen")
+    ?"The assessment must stay in full screen. This has been recorded."
+    :"Switching tabs or windows during the assessment is not allowed. This has been recorded.";
+  document.getElementById("guard-cnt").textContent="Warnings so far: "+tabSwitches;
+  document.getElementById("guard").classList.add("on");
+}
+function guardReturn(){
+  guardAway=false;
+  document.getElementById("guard").classList.remove("on");
+  enterFullscreen();
+}
+function guardStart(){ guardOn=true; guardAway=false; tabSwitches=0; enterFullscreen(); }
+function guardStop(){ guardOn=false; guardAway=false; document.getElementById("guard").classList.remove("on"); exitFullscreen(); }
+document.addEventListener("visibilitychange",function(){ if(document.hidden) guardTrip("tab"); });
+window.addEventListener("blur",function(){ setTimeout(function(){ if(guardOn&&!document.hasFocus()&&!guardAway) guardTrip("tab"); },150); });
+["fullscreenchange","webkitfullscreenchange"].forEach(function(ev){
+  document.addEventListener(ev,function(){ if(guardOn&&!inFullscreen()) guardTrip("fullscreen"); });
+});
+
+function beginAll() {
+  guardStart();
+  candidateName   = document.getElementById("cand-name").value || "Candidate";
+  candidateEmail  = document.getElementById("cand-email").value || "";
+  assessmentStart = Date.now();
+  currentGame     = -1;
+  busy            = false;
+  advanceGame();
+}
+
+/* ── INTRO SCREEN ── */
+function showIntroFor(idx) {
+  var g = GAME_META[idx];
+  document.getElementById("intro-label").textContent = "Game " + (idx+1) + " of " + GAME_SEQUENCE.length;
+  document.getElementById("intro-title").textContent = g.name;
+  document.getElementById("intro-desc").textContent  = g.desc;
+  document.getElementById("intro-icon").textContent  = g.icon;
+  document.getElementById("intro-trait").textContent = g.trait;
+  document.getElementById("intro-time").textContent  = g.time;
+  document.getElementById("intro-start-btn").textContent = "Start " + g.name;
+  show("s-intro");
+}
+
+function startCurrentGame() {
+  var id = GAME_SEQUENCE[currentGame];
+  if      (id === "risk")       initRisk();
+  else if (id === "memory")     initMemory();
+  else if (id === "pattern")    initPattern();
+  else if (id === "emotion")    initEmotion();
+  else if (id === "number")     initNumber();
+  else if (id === "boundaries") initBoundaries();
+  else if (id === "culture")    initCulture();
+  else if (id === "discipline") initDiscipline();
+}
+
+/* ── SHARED: progress dots (used by most games) ── */
+function makeDots(id, total, done, active) {
+  var el = document.getElementById(id); if (!el) return; el.innerHTML = "";
+  for (var i = 0; i < total; i++) {
+    var d = document.createElement("div");
+    d.className = "dot" + (i < done ? " done" : i === active ? " active" : "");
+    el.appendChild(d);
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   SHARED HELPERS FOR MINI-GAMES
+═══════════════════════════════════════════════ */
+var barTimers={};
+function startBar(id,ms,cb){
+  var el=document.getElementById(id); if(!el) return;
+  el.style.transition="none"; el.style.width="100%"; void el.offsetWidth;
+  el.style.transition="width "+ms+"ms linear"; el.style.width="0%";
+  clearTimeout(barTimers[id]);
+  barTimers[id]=setTimeout(function(){ if(typeof cb==="function") cb(); },ms);
+}
+function stopBar(id){
+  clearTimeout(barTimers[id]); barTimers[id]=null;
+  var el=document.getElementById(id); if(!el) return;
+  var w=getComputedStyle(el).width; el.style.transition="none"; el.style.width=w;
+}
+function floatCombo(txt,color){
+  var p=document.createElement("div"); p.className="combo-pop"; p.textContent=txt; if(color) p.style.color=color;
+  document.body.appendChild(p); setTimeout(function(){ if(p.parentNode)p.parentNode.removeChild(p); },700);
+}
+function disableKids(id,d){ var el=document.getElementById(id); if(el) Array.from(el.children).forEach(function(b){b.disabled=d;}); }
+
+/* ═══════════════════════════════════════════════
+   GAME 1 — RISK TRIAGE  (Risk Management)
+   Sort each situation into Low / Monitor / Escalate.
+   correct: 0 = Low, 1 = Monitor, 2 = Escalate.
+═══════════════════════════════════════════════ */
+var RISK_ITEMS=[
+  {tag:"Data",     scene:"An employee emails a spreadsheet of customer records to their personal account.", correct:2, why:"A possible data breach — escalate immediately."},
+  {tag:"Service",  scene:"Customer complaints have ticked up slightly over the last two weeks.",            correct:1, why:"An early trend worth watching before it grows."},
+  {tag:"Docs",     scene:"A teammate fixed a small typo in an internal wiki page and noted the change.",    correct:0, why:"Minor and already handled — low risk."},
+  {tag:"Safety",   scene:"A fire door on your floor has been propped open with a cardboard box.",          correct:2, why:"A safety and security breach — raise it now."},
+  {tag:"Vendors",  scene:"One supplier has been a day late on two of its recent deliveries.",              correct:1, why:"Not critical yet — keep an eye on reliability."},
+  {tag:"Change",   scene:"A routine, well-tested software update is scheduled, with backups in place.",     correct:0, why:"Controlled and reversible — low risk."},
+  {tag:"Clients",  scene:"A client-facing report due within the hour still has an unexplained error.",     correct:2, why:"Flag and fix it before it reaches the client."},
+  {tag:"People",   scene:"A key weekly process depends on one person who's taking leave next month.",      correct:1, why:"A future key-person risk — monitor and plan cover."}
+];
+var BIN_NAMES=["Low risk","Monitor","Escalate"];
+var rkIdx=0, rkCorrect=0, rkCombo=0, rkAnswered=false, rkRunning=false;
+function initRisk(){
+  rkIdx=0; rkCorrect=0; rkRunning=true;
+  show("s-risk"); nextRisk();
+}
+function nextRisk(){
+  if(rkIdx>=RISK_ITEMS.length) return endRisk();
+  rkAnswered=false; var it=RISK_ITEMS[rkIdx];
+  makeDots("risk-dots",RISK_ITEMS.length,rkIdx,rkIdx);
+  var card=document.getElementById("risk-card"); card.className="triage-card";
+  document.getElementById("risk-tag").textContent=it.tag;
+  document.getElementById("risk-scene").textContent=it.scene;
+  var v=document.getElementById("risk-verdict"); v.textContent=""; v.className="verdict";
+  disableKids("risk-bins",false);
+  startBar("risk-time",15000,function(){ if(!rkAnswered) resolveRisk(-1); });
+}
+function triagePick(choice){ if(!rkRunning||rkAnswered) return; resolveRisk(choice); }
+function resolveRisk(choice){
+  rkAnswered=true; stopBar("risk-time"); disableKids("risk-bins",true);
+  var it=RISK_ITEMS[rkIdx];
+  if(choice===it.correct) rkCorrect++;            /* tallied silently */
+  if(choice>=0) document.getElementById("risk-card").classList.add("fly-"+choice);
+  var v=document.getElementById("risk-verdict"); v.className="verdict";
+  v.textContent=(choice<0)?"Time\u2019s up \u2014 next\u2026":"Locked in \u2014 next\u2026";
+  rkIdx++; setTimeout(nextRisk, 800);
+}
+function endRisk(){ rkRunning=false; stopBar("risk-time");
+  scores.risk=Math.round(rkCorrect/RISK_ITEMS.length*100); advanceGame(); }
+
+/* ═══════════════════════════════════════════════
+   GAME 8 — RED LINE  (Professional Boundaries)
+   Each behaviour flies in; flick it to the right zone.
+   zone 0 = Crosses the line, zone 1 = Appropriate.
+═══════════════════════════════════════════════ */
+var BOUND_ITEMS=[
+  {scene:"A coworker asks you to badge them into a secure area because they forgot their card.", ok:false, why:"Never substitute access credentials for anyone."},
+  {scene:"A client asks to connect with you on LinkedIn after a successful project.",            ok:true,  why:"A professional connection on a professional network."},
+  {scene:"A colleague messages you about non-urgent work at 11pm expecting an instant reply.",   ok:false, why:"Expecting instant off-hours replies crosses the line."},
+  {scene:"A team member posts a customer's personal details in a public channel to save time.",  ok:false, why:"Personal data must not be shared in open channels."},
+  {scene:"You politely decline repeated after-work invitations you're not comfortable with.",    ok:true,  why:"Setting your own social boundaries is fine."},
+  {scene:"A senior colleague asks you to sign off on work you haven't actually reviewed.",       ok:false, why:"Don't approve work you haven't checked, whoever asks."},
+  {scene:"You ask a teammate to explain a task again because the brief wasn't clear.",           ok:true,  why:"Asking for clarity is good practice, not a breach."},
+  {scene:"A colleague wants your login to 'quickly grab a file' while you're out.",              ok:false, why:"Logins are personal \u2014 use proper access channels."}
+];
+var blIdx=0, blCorrect=0, blCombo=0, blAnswered=false, blRunning=false;
+function initBoundaries(){
+  blIdx=0; blCorrect=0; blRunning=true;
+  show("s-boundaries"); nextRedline();
+}
+function nextRedline(){
+  if(blIdx>=BOUND_ITEMS.length) return endBoundaries();
+  blAnswered=false; var it=BOUND_ITEMS[blIdx];
+  makeDots("bd-dots",BOUND_ITEMS.length,blIdx,blIdx);
+  var item=document.getElementById("bd-item"); item.className="rl-item in"; item.textContent=it.scene;
+  var v=document.getElementById("bd-verdict"); v.textContent=""; v.className="verdict";
+  disableKids("bd-zones",false);
+  startBar("bd-time",15000,function(){ if(!blAnswered) resolveRedline(-1); });
+}
+function redlinePick(z){ if(!blRunning||blAnswered) return; resolveRedline(z); }
+function resolveRedline(z){
+  blAnswered=true; stopBar("bd-time"); disableKids("bd-zones",true);
+  var it=BOUND_ITEMS[blIdx];
+  if(z===(it.ok?1:0)) blCorrect++;                /* tallied silently */
+  if(z>=0) document.getElementById("bd-item").classList.add("go-"+z);
+  var v=document.getElementById("bd-verdict"); v.className="verdict";
+  v.textContent=(z<0)?"Time\u2019s up \u2014 next\u2026":"Sent \u2014 next\u2026";
+  blIdx++; setTimeout(nextRedline, 800);
+}
+function endBoundaries(){ blRunning=false; stopBar("bd-time");
+  scores.boundaries=Math.round(blCorrect/BOUND_ITEMS.length*100); advanceGame(); }
+
+/* ═══════════════════════════════════════════════
+   GAME 9 — CULTURE POP  (Maintaining Culture)
+   Whack-a-mole: tap culture-positive moments,
+   leave the toxic ones. Build team morale in 30s.
+═══════════════════════════════════════════════ */
+var CU_GOOD=[{e:"\ud83d\ude4c",t:"Shared credit"},{e:"\ud83e\udd1d",t:"Welcomed newcomer"},{e:"\ud83d\udc4f",t:"Gave kudos"},
+  {e:"\ud83e\udef6",t:"Helped a peer"},{e:"\ud83d\udcac",t:"Spoke up kindly"},{e:"\u270b",t:"Owned a mistake"}];
+var CU_BAD=[{e:"\ud83d\ude24",t:"Took all credit"},{e:"\ud83d\ude44",t:"Excluded someone"},{e:"\ud83d\udc0d",t:"Spread gossip"},
+  {e:"\ud83d\udc49",t:"Blamed others"},{e:"\ud83d\udeab",t:"Interrupted"},{e:"\ud83e\uddca",t:"Dismissed idea"}];
+var cuTime=30, cuScore=0, cuMorale=50, cuRunning=false, cuSpawn=null, cuCount=null, cuTokenTimers=[];
+function clampM(v){ return Math.max(0,Math.min(100,v)); }
+function updateMorale(){
+  document.getElementById("cu-morale").textContent=Math.round(cuMorale);
+  document.getElementById("cu-morale-bar").style.width=cuMorale+"%";
+}
+function initCulture(){
+  cuTime=30; cuScore=0; cuMorale=50; cuRunning=true; cuTokenTimers=[];
+  document.getElementById("cu-score").textContent="0";
+  document.getElementById("cu-time").textContent="30";
+  document.getElementById("cu-verdict").textContent="";
+  updateMorale();
+  var g=document.getElementById("cu-grid"); g.innerHTML="";
+  for(var i=0;i<9;i++){ var s=document.createElement("div"); s.className="pop-slot"; s.id="cu-slot-"+i; g.appendChild(s); }
+  show("s-culture");
+  cuCount=setInterval(function(){
+    cuTime--; document.getElementById("cu-time").textContent=Math.max(0,cuTime);
+    if(cuTime<=0) endCulture();
+  },1000);
+  cuSpawn=setInterval(spawnToken,780);
+  spawnToken();
+}
+function spawnToken(){
+  if(!cuRunning) return;
+  var empties=[]; for(var i=0;i<9;i++){ var sl=document.getElementById("cu-slot-"+i); if(sl&&!sl.firstChild) empties.push(i); }
+  if(!empties.length) return;
+  var slot=empties[Math.floor(Math.random()*empties.length)];
+  var good=Math.random()<0.55;
+  var set=good?CU_GOOD:CU_BAD, item=set[Math.floor(Math.random()*set.length)];
+  var tk=document.createElement("div"); tk.className="pop-token neutral";
+  tk.innerHTML='<span class="emo">'+item.e+'</span><span class="lab">'+item.t+'</span>';
+  tk.onclick=function(){ tapToken(tk,good); };
+  document.getElementById("cu-slot-"+slot).appendChild(tk);
+  var life=1000+Math.random()*500;
+  var to=setTimeout(function(){
+    if(tk.parentNode && !tk.dataset.used){
+      if(good){ cuMorale=clampM(cuMorale-4); updateMorale(); }
+      tk.classList.add("leave");
+      setTimeout(function(){ if(tk.parentNode) tk.parentNode.removeChild(tk); },180);
+    }
+  },life);
+  cuTokenTimers.push(to);
+}
+function tapToken(tk,good){
+  if(!cuRunning||tk.dataset.used) return; tk.dataset.used="1";
+  if(good){ cuScore++; cuMorale=clampM(cuMorale+6); document.getElementById("cu-score").textContent=cuScore;
+  }
+  else { cuMorale=clampM(cuMorale-8);
+    tk.classList.remove("neutral"); tk.classList.add("wrong"); floatCombo("\u2717 Wrong","#F87171");
+    updateMorale();
+    setTimeout(function(){ tk.classList.add("leave"); },450);
+    setTimeout(function(){ if(tk.parentNode) tk.parentNode.removeChild(tk); },650);
+    return; }
+  updateMorale();
+  tk.classList.add("leave");
+  setTimeout(function(){ if(tk.parentNode) tk.parentNode.removeChild(tk); },180);
+}
+function endCulture(){
+  if(!cuRunning) return;
+  cuRunning=false;
+  clearInterval(cuSpawn); clearInterval(cuCount); cuCount=null;
+  cuTokenTimers.forEach(function(t){clearTimeout(t);}); cuTokenTimers=[];
+  document.getElementById("cu-grid").innerHTML="";
+  document.getElementById("cu-verdict").textContent="";
+  scores.culture=Math.round(cuMorale);
+  setTimeout(advanceGame,1200);
+}
+
+/* ═══════════════════════════════════════════════
+   GAME 10 — COLOUR CLASH  (Discipline / inhibitory control)
+   Stroop: tap the INK colour, not the word. 75% of trials clash.
+═══════════════════════════════════════════════ */
+var CC_COLORS={red:"#F87171",green:"#4ADE80",blue:"#60A5FA",yellow:"#FBBF24"};
+var CC_KEYS=["red","green","blue","yellow"];
+var diTotal=20, diRound=0, diScore=0, diSlips=0, diRunning=false, diAnswered=true, diInk="red", diTimer=null;
+function initDiscipline(){
+  diRound=0; diScore=0; diSlips=0; diRunning=true; diAnswered=true;
+  document.getElementById("di-score").textContent="0";
+  document.getElementById("di-slips").textContent="0";
+  document.getElementById("di-round").textContent="0/"+diTotal;
+  document.getElementById("di-status").textContent="";
+  document.getElementById("di-verdict").textContent="";
+  document.getElementById("di-word").innerHTML="&nbsp;";
+  makeDots("di-dots",diTotal,0,0);
+  show("s-discipline");
+  disableKids("di-btns",true);
+  diTimer=setTimeout(nextCue,900);
+}
+function nextCue(){
+  if(!diRunning) return;
+  if(diRound>=diTotal) return endDiscipline();
+  diRound++; document.getElementById("di-round").textContent=diRound+"/"+diTotal;
+  makeDots("di-dots",diTotal,diRound-1,diRound-1);
+  var word=CC_KEYS[Math.floor(Math.random()*4)];
+  var clash=Math.random()<0.75;
+  if(clash){ var others=CC_KEYS.filter(function(k){return k!==word;}); diInk=others[Math.floor(Math.random()*3)]; }
+  else diInk=word;
+  var el=document.getElementById("di-word");
+  el.textContent=word.toUpperCase(); el.style.color=CC_COLORS[diInk];
+  el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop");
+  document.getElementById("di-status").textContent="";
+  diAnswered=false; disableKids("di-btns",false);
+  startBar("di-time",2600,function(){ if(!diAnswered) resolveCue(null); });
+}
+function ccPick(c){ if(!diRunning||diAnswered) return; resolveCue(c); }
+function resolveCue(c){
+  diAnswered=true; stopBar("di-time"); disableKids("di-btns",true);
+  var st=document.getElementById("di-status");
+  if(c===diInk) diScore++; else diSlips++;            /* tallied silently */
+  st.textContent="";
+  diTimer=setTimeout(nextCue,550);
+}
+function endDiscipline(){
+  diRunning=false; clearTimeout(diTimer); stopBar("di-time");
+  var pct=Math.round(diScore/diTotal*100);
+  document.getElementById("di-verdict").textContent="";
+  scores.discipline=pct;
+  setTimeout(advanceGame,1300);
+}
+
+/* ═══════════════════════════════════════════════
+   GAME 2 — MEMORY TILES
+═══════════════════════════════════════════════ */
+var mRound=0, mSeq=[], mInput=[], mLen=3, mCorrect=0, mPhase="idle";
+function initMemory() {
+  mRound=0; mLen=3; mCorrect=0; mPhase="idle";
+  buildMemoryGrid(); startMemoryRound(); show("s-memory");
+}
+function buildMemoryGrid() {
+  var g=document.getElementById("memory-grid"); g.innerHTML="";
+  for(var i=0;i<16;i++){
+    var t=document.createElement("div"); t.className="mem-tile disabled";
+    t.innerHTML='<div class="mem-tile-num">'+(i+1)+'</div>';
+    (function(idx){t.onclick=function(){memTileTap(idx);};})(i);
+    g.appendChild(t);
+  }
+}
+function memTiles(){return document.getElementById("memory-grid").children;}
+function startMemoryRound() {
+  document.getElementById("m-round").textContent=mRound+1;
+  document.getElementById("m-len").textContent=mLen;
+  document.getElementById("m-status").textContent="";
+  mPhase="show"; mInput=[]; mFail=false;
+  mSeq=[];
+  while(mSeq.length<mLen){var n=Math.floor(Math.random()*16);if(mSeq.indexOf(n)===-1)mSeq.push(n);}
+  Array.from(memTiles()).forEach(function(t){t.className="mem-tile disabled";});
+  document.getElementById("m-instruction").textContent="Watch the sequence";
+  var delay=600;
+  mSeq.forEach(function(idx,i){
+    setTimeout(function(){if(memTiles()[idx])memTiles()[idx].classList.add("lit");},delay+i*700);
+    setTimeout(function(){if(memTiles()[idx])memTiles()[idx].classList.remove("lit");},delay+i*700+500);
+  });
+  setTimeout(function(){
+    mPhase="input";
+    document.getElementById("m-instruction").textContent="Now tap them in order!";
+    Array.from(memTiles()).forEach(function(t){t.classList.remove("disabled");});
+    document.getElementById("m-status").textContent="Tap 1 of "+mLen;
+  }, delay+mLen*700+400);
+}
+var mFail=false;
+function memTileTap(idx) {
+  if(mPhase!=="input") return;
+  var expected=mSeq[mInput.length], tl=memTiles()[idx];
+  if(idx===expected){
+    tl.classList.add("lit"); setTimeout(function(){tl.classList.remove("lit");},400);
+    mInput.push(idx);
+    document.getElementById("m-status").textContent="Tap "+(mInput.length+1)+" of "+mLen;
+    if(mInput.length===mLen){
+      mCorrect++; mPhase="done";
+      document.getElementById("m-status").textContent="\u2713 Correct!";
+      mRound++;
+      if(mRound<6){setTimeout(function(){mLen++;startMemoryRound();},900);}
+      else{setTimeout(endMemory,700);}
+    }
+  } else {
+    tl.classList.add("wrong");
+    Array.from(memTiles()).forEach(function(t){t.classList.add("disabled");});
+    mPhase="done";
+    document.getElementById("m-status").textContent="\u2717 Wrong \u2014 next round";
+    setTimeout(function(){tl.classList.remove("wrong");},600);
+    mRound++;
+    if(mRound<6){setTimeout(function(){startMemoryRound();},1000);}
+    else{setTimeout(endMemory,1000);}
+  }
+}
+function endMemory() {
+  scores.memory=Math.round(mCorrect/6*100);
+  advanceGame();
+}
+
+/* ═══════════════════════════════════════════════
+   GAME 4 — PATTERN MATCH
+═══════════════════════════════════════════════ */
+var pRound=0, pTotal=10, pCorrect=0, pTimer=null, pAnswered=false, pCurrentMatch=false;
+function genPattern(){var p=[];for(var i=0;i<16;i++)p.push(Math.random()>.55);return p;}
+function renderPattern(id,cells){
+  var el=document.getElementById(id); el.innerHTML="";
+  cells.forEach(function(on){var c=document.createElement("div");c.className="pcell"+(on?" on":"");el.appendChild(c);});
+}
+function initPattern(){
+  pRound=0; pCorrect=0; pAnswered=false;
+  makeDots("p-dots",pTotal,0,0); startPatternRound(); show("s-pattern");
+}
+function startPatternRound(){
+  pAnswered=false; clearTimeout(pTimer);
+  document.getElementById("p-result").textContent="";
+  document.getElementById("p-btns").style.opacity="1";
+  document.getElementById("p-btns").style.pointerEvents="auto";
+  makeDots("p-dots",pTotal,pRound,pRound);
+  var left=genPattern(), isMatch=(Math.random()>.45);
+  var right=isMatch?left.slice():genPattern();
+  pCurrentMatch=isMatch;
+  renderPattern("p-left",left); renderPattern("p-right",right);
+  var duration=3000;
+  document.getElementById("p-timer-fill").style.transition="none";
+  document.getElementById("p-timer-fill").style.width="100%";
+  setTimeout(function(){
+    document.getElementById("p-timer-fill").style.transition="width "+duration+"ms linear";
+    document.getElementById("p-timer-fill").style.width="0%";
+  },30);
+  pTimer=setTimeout(function(){if(!pAnswered)patternAnswer(null);},duration);
+}
+function patternAnswer(ans){
+  if(pAnswered) return; pAnswered=true;
+  clearTimeout(pTimer);
+  document.getElementById("p-btns").style.opacity=".4";
+  document.getElementById("p-btns").style.pointerEvents="none";
+  if(ans!==null && ans===pCurrentMatch) pCorrect++;   /* tallied silently */
+  document.getElementById("p-result").textContent="";
+  pRound++;
+  makeDots("p-dots",pTotal,pRound,pRound<pTotal?pRound:-1);
+  if(pRound>=pTotal){setTimeout(endPattern,800);}
+  else{setTimeout(startPatternRound,900);}
+}
+function endPattern(){
+  scores.pattern=Math.round(pCorrect/pTotal*100);
+  advanceGame();
+}
+
+/* ═══════════════════════════════════════════════
+   GAME 5 — EMOTION READ
+═══════════════════════════════════════════════ */
+var EMOTIONS=[
+  {face:"😠",desc:"Your colleague takes credit for your report in front of your boss without acknowledging your work.",
+   answer:"Angry",opts:["Angry","Proud","Surprised","Sad"]},
+  {face:"😟",desc:"You worked late for weeks on a project that just got cancelled. No explanation was given.",
+   answer:"Disappointed",opts:["Excited","Disappointed","Angry","Confused"]},
+  {face:"😰",desc:"Your team leader just told you that you have to present to senior management in 10 minutes.",
+   answer:"Anxious",opts:["Anxious","Happy","Bored","Confident"]},
+  {face:"😊",desc:"A client sent a personal thank-you note saying your support made a real difference to their business.",
+   answer:"Grateful",opts:["Guilty","Surprised","Grateful","Nervous"]},
+  {face:"😤",desc:"For the third time this week a colleague has interrupted you mid-sentence during a team call.",
+   answer:"Frustrated",opts:["Embarrassed","Frustrated","Excited","Relaxed"]},
+  {face:"😕",desc:"Your team leader explains a new process but the instructions seem to contradict each other.",
+   answer:"Confused",opts:["Confused","Angry","Happy","Inspired"]},
+  {face:"🤩",desc:"You have just been told you are getting a promotion you have worked toward for two years.",
+   answer:"Excited",opts:["Nervous","Relieved","Excited","Surprised"]},
+  {face:"😣",desc:"You made a mistake in a client presentation and everyone in the room noticed.",
+   answer:"Embarrassed",opts:["Embarrassed","Angry","Proud","Bored"]},
+];
+var eRound=0, eTotal=8, eCorrect=0, eCombo=0, eLives=3, eAnswering=false;
+
+/* ── Snap Read: animated situation scenes (neutral faces, so the picture shows the SITUATION, not the answer) ── */
+function snSvg(inner,bg){ return '<svg class="sn-scene" viewBox="0 0 320 170" xmlns="http://www.w3.org/2000/svg">'+
+  '<rect width="320" height="170" fill="'+(bg||"#EEF0FA")+'"/><rect y="138" width="320" height="32" fill="'+(bg?"#0F172A":"#B9BFD8")+'"/>'+inner+'</svg>'; }
+function snPerson(x,col,o){ o=o||{}; var lx=o.look||0, ly=o.up||0, y=o.y||134;
+  return '<g transform="translate('+x+','+y+')"><g'+(o.bob?' style="animation:sn-bob '+o.bob+'s ease-in-out infinite"':'')+'>'+
+   '<rect x="-12" y="-34" width="24" height="36" rx="9" fill="'+col+'"/>'+
+   (o.tie?'<path d="M0 -34 l-4 9 l4 8 l4 -8z" fill="'+o.tie+'"/>':'')+
+   '<circle cy="-46" r="11" fill="#FCD9B6"/>'+
+   '<circle cx="'+(-4+lx)+'" cy="'+(-47+ly)+'" r="1.7" fill="#3B2F2F"/><circle cx="'+(4+lx)+'" cy="'+(-47+ly)+'" r="1.7" fill="#3B2F2F"/>'+
+   '<line x1="-4" y1="-41" x2="4" y2="-41" stroke="#3B2F2F" stroke-width="1.7" stroke-linecap="round"/></g></g>'; }
+function snBubble(x,y,w,txt,st){ return '<g'+(st?' style="'+st+'"':'')+'><rect x="'+x+'" y="'+y+'" width="'+w+'" height="22" rx="9" fill="#fff" stroke="#94A3B8" stroke-width="1.5"/>'+
+  '<text x="'+(x+w/2)+'" y="'+(y+15)+'" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" font-weight="700" fill="#334155">'+txt+'</text></g>'; }
+function snDoc(x,y,col){ return '<rect x="'+x+'" y="'+y+'" width="24" height="30" rx="2" fill="#fff" stroke="#64748B" stroke-width="1.5"/>'+
+  '<line x1="'+(x+5)+'" y1="'+(y+9)+'" x2="'+(x+19)+'" y2="'+(y+9)+'" stroke="#CBD5E1" stroke-width="2"/><line x1="'+(x+5)+'" y1="'+(y+15)+'" x2="'+(x+19)+'" y2="'+(y+15)+'" stroke="#CBD5E1" stroke-width="2"/>'+
+  '<circle cx="'+(x+12)+'" cy="'+(y+23)+'" r="3.5" fill="'+col+'"/>'; }
+function snClock(cx,cy,r,spin,wedge){ var t='';
+  for(var i=0;i<12;i++){ var an=i*30*Math.PI/180; t+='<line x1="'+(cx+Math.sin(an)*(r-6))+'" y1="'+(cy-Math.cos(an)*(r-6))+'" x2="'+(cx+Math.sin(an)*(r-2))+'" y2="'+(cy-Math.cos(an)*(r-2))+'" stroke="#475569" stroke-width="2"/>'; }
+  var w=''; if(wedge){ w='<path d="M'+cx+' '+cy+' L'+cx+' '+(cy-(r-3))+' A'+(r-3)+' '+(r-3)+' 0 0 1 '+(cx+Math.sin(Math.PI/3)*(r-3))+' '+(cy-Math.cos(Math.PI/3)*(r-3))+' Z" fill="#EF4444" opacity=".55"/>'; }
+  return '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="#fff" stroke="#334155" stroke-width="3"/>'+w+t+
+   '<line x1="'+cx+'" y1="'+cy+'" x2="'+cx+'" y2="'+(cy-r+9)+'" stroke="#0F172A" stroke-width="3" stroke-linecap="round" style="transform-origin:'+cx+'px '+cy+'px;animation:sn-spin '+spin+'s linear infinite"/>'+
+   '<circle cx="'+cx+'" cy="'+cy+'" r="3" fill="#0F172A"/>'; }
+
+var SN_SCENES=[
+ /* 1 — credit taken */
+ snSvg(
+  snBubble(112,30,84,'My report!','animation:sn-pop 4s ease-in-out infinite;transform-origin:154px 41px')+
+  snPerson(272,'#475569',{tie:'#DC2626',bob:2})+
+  snPerson(160,'#F97316',{bob:2.4})+snDoc(172,92,'#F97316').replace(/<rect/,'<rect')+
+  snPerson(48,'#3B82F6')+
+  '<g style="animation:sn-slide 4s ease-in-out infinite">'+snDoc(62,96,'#3B82F6')+'</g>'),
+ /* 2 — project cancelled after late nights */
+ snSvg(
+  '<circle cx="280" cy="30" r="14" fill="#FDE68A"/><circle cx="274" cy="26" r="13" fill="#0F172A"/>'+
+  '<circle cx="230" cy="20" r="2" fill="#fff" style="animation:sn-twinkle 2s infinite"/><circle cx="196" cy="42" r="1.6" fill="#fff" style="animation:sn-twinkle 2.6s infinite"/><circle cx="300" cy="64" r="1.6" fill="#fff" style="animation:sn-twinkle 1.8s infinite"/>'+
+  snClock(52,46,26,2.4)+
+  '<rect x="150" y="30" width="136" height="76" rx="4" fill="#fff" stroke="#94A3B8" stroke-width="3"/>'+
+  '<text x="218" y="48" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" font-weight="800" fill="#334155">PROJECT X</text>'+
+  '<rect x="164" y="58" width="108" height="8" rx="4" fill="#CBD5E1"/><rect x="164" y="58" width="92" height="8" rx="4" fill="#4ADE80"/>'+
+  '<rect x="164" y="76" width="108" height="8" rx="4" fill="#CBD5E1"/><rect x="164" y="76" width="70" height="8" rx="4" fill="#4ADE80"/>'+
+  '<g style="transform-origin:218px 88px;animation:sn-stamp 3.6s ease-in infinite"><rect x="168" y="76" width="100" height="26" rx="4" fill="none" stroke="#DC2626" stroke-width="4" transform="rotate(-8 218 88)"/>'+
+  '<text x="218" y="95" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="15" font-weight="800" fill="#DC2626" transform="rotate(-8 218 88)">CANCELLED</text></g>'+
+  '<rect x="60" y="108" width="70" height="8" rx="2" fill="#92400E"/><rect x="66" y="116" width="6" height="22" fill="#78350F"/><rect x="118" y="116" width="6" height="22" fill="#78350F"/>'+
+  '<rect x="78" y="90" width="34" height="18" rx="2" fill="#1E293B"/><rect x="82" y="93" width="26" height="12" fill="#60A5FA" style="animation:sn-twinkle 1.6s infinite"/>'+
+  snPerson(40,'#3B82F6',{y:134}) , '#1E293B'),
+ /* 3 — present in 10 minutes */
+ snSvg(
+  snBubble(14,26,132,'Present in 10 min!','animation:sn-pop 4s ease-in-out infinite;transform-origin:80px 37px')+
+  snPerson(54,'#10B981',{tie:'#065F46',bob:2.2})+snPerson(118,'#3B82F6')+
+  snClock(250,66,40,3)+
+  '<text x="250" y="124" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="12" font-weight="800" fill="#EF4444">10 min left</text>'),
+ /* 4 — thank-you note from a client */
+ snSvg(
+  snPerson(60,'#3B82F6',{bob:2.6})+
+  '<rect x="130" y="112" width="160" height="10" rx="3" fill="#92400E"/><rect x="140" y="122" width="8" height="16" fill="#78350F"/><rect x="272" y="122" width="8" height="16" fill="#78350F"/>'+
+  '<g style="animation:sn-env 3.6s ease-out infinite">'+
+   '<g style="animation:sn-rise 3.6s ease-in-out infinite"><rect x="180" y="74" width="62" height="44" rx="3" fill="#FEF9C3" stroke="#CA8A04" stroke-width="2"/>'+
+   '<text x="211" y="92" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" font-weight="800" fill="#92400E">THANK YOU</text>'+
+   '<path d="M211 104 c-8 -7 -2 -13 0 -9 c2 -4 8 2 0 9z" fill="#EF4444" style="transform-origin:211px 100px;animation:sn-pulse 1s ease-in-out infinite"/></g>'+
+   '<rect x="176" y="96" width="70" height="26" rx="3" fill="#FDE68A" stroke="#CA8A04" stroke-width="2"/><path d="M176 96 l35 14 l35 -14" fill="none" stroke="#CA8A04" stroke-width="2"/></g>'),
+ /* 5 — interrupted on a team call */
+ snSvg(
+  [14,114,214].map(function(x,i){ return '<rect x="'+x+'" y="14" width="92" height="64" rx="6" fill="#CBD5E1" stroke="'+(i===1?'#F97316':'#94A3B8')+'" stroke-width="'+(i===1?3:2)+'"/>'+
+    '<circle cx="'+(x+46)+'" cy="40" r="11" fill="#FCD9B6"/><circle cx="'+(x+42)+'" cy="39" r="1.7" fill="#3B2F2F"/><circle cx="'+(x+50)+'" cy="39" r="1.7" fill="#3B2F2F"/><line x1="'+(x+42)+'" y1="45" x2="'+(x+50)+'" y2="45" stroke="#3B2F2F" stroke-width="1.7" stroke-linecap="round"/>'+
+    '<rect x="'+(x+26)+'" y="53" width="40" height="25" rx="10" fill="'+(i===0?'#3B82F6':i===1?'#F97316':'#64748B')+'"/>'; }).join('')+
+  '<text x="60" y="94" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" font-weight="800" fill="#3B82F6">YOU</text>'+
+  snBubble(10,100,100,'So the plan is\u2014')+
+  snBubble(116,100,92,'Actually\u2026','animation:sn-pop 3.6s ease-in-out infinite;transform-origin:162px 111px')+
+  '<text x="30" y="150" font-family="DM Sans,sans-serif" font-size="11" font-weight="800" fill="#E2E8F0">Interrupted this week:</text>'+
+  [0,1,2].map(function(i){ return '<line x1="'+(180+i*12)+'" y1="138" x2="'+(180+i*12)+'" y2="156" stroke="#F87171" stroke-width="4" stroke-linecap="round" style="animation:sn-tick 4s infinite;animation-delay:'+(i*0.8)+'s"/>'; }).join(''), '#1E293B'),
+ /* 6 — contradicting instructions */
+ snSvg(
+  snPerson(40,'#10B981',{tie:'#065F46',bob:2.2})+snBubble(6,30,78,'Follow this','animation:sn-pop 4s ease-in-out infinite;transform-origin:45px 41px')+
+  '<rect x="92" y="14" width="214" height="118" rx="5" fill="#fff" stroke="#94A3B8" stroke-width="3"/>'+
+  '<text x="199" y="32" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" font-weight="800" fill="#334155">NEW PROCESS</text>'+
+  '<g style="animation:sn-alt 2s infinite"><rect x="108" y="44" width="50" height="30" rx="5" fill="#BFDBFE" stroke="#3B82F6" stroke-width="2"/><text x="133" y="64" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="14" font-weight="800" fill="#1E3A8A">A</text>'+
+  '<path d="M164 59 H226" stroke="#3B82F6" stroke-width="4"/><path d="M226 51 l12 8 l-12 8z" fill="#3B82F6"/>'+
+  '<rect x="244" y="44" width="50" height="30" rx="5" fill="#BFDBFE" stroke="#3B82F6" stroke-width="2"/><text x="269" y="64" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="14" font-weight="800" fill="#1E3A8A">B</text></g>'+
+  '<g style="animation:sn-alt 2s infinite;animation-delay:1s"><rect x="108" y="88" width="50" height="30" rx="5" fill="#FED7AA" stroke="#F97316" stroke-width="2"/><text x="133" y="108" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="14" font-weight="800" fill="#7C2D12">B</text>'+
+  '<path d="M226 103 H164" stroke="#F97316" stroke-width="4"/><path d="M164 95 l-12 8 l12 8z" fill="#F97316"/>'+
+  '<rect x="232" y="88" width="50" height="30" rx="5" fill="#FED7AA" stroke="#F97316" stroke-width="2"/><text x="257" y="108" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="14" font-weight="800" fill="#7C2D12">A</text></g>'),
+ /* 7 — promotion */
+ snSvg(
+  '<rect x="70" y="12" width="180" height="26" rx="6" fill="#7C3AED"/><text x="160" y="30" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="14" font-weight="800" fill="#fff">\u2605 PROMOTION \u2605</text>'+
+  [0,1,2,3].map(function(i){ return '<rect x="'+(150+i*34)+'" y="'+(122-i*22)+'" width="34" height="'+(16+i*22)+'" fill="'+['#CBD5E1','#A5B4FC','#818CF8','#6366F1'][i]+'" stroke="#4338CA" stroke-width="1.5"/>'; }).join('')+
+  '<text x="167" y="136" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" font-weight="800" fill="#334155">2 YRS</text>'+
+  snPerson(60,'#475569',{tie:'#DC2626',bob:2.4})+
+  snPerson(252,'#3B82F6',{y:58,bob:1.6})+
+  [0,1,2,3,4,5,6,7].map(function(i){ var c=['#F43F5E','#FBBF24','#22D3EE','#A78BFA'][i%4]; return '<rect x="'+(24+i*38)+'" y="0" width="7" height="11" fill="'+c+'" style="animation:sn-fall '+(2.4+(i%3)*0.5)+'s linear infinite;animation-delay:'+(i*0.3)+'s"/>'; }).join('')),
+ /* 8 — mistake in a client presentation */
+ snSvg(
+  '<rect x="96" y="8" width="148" height="68" rx="4" fill="#fff" stroke="#64748B" stroke-width="3"/>'+
+  '<text x="170" y="26" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" font-weight="800" fill="#334155">CLIENT REPORT: Q3</text>'+
+  '<text x="170" y="52" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="16" font-weight="800" fill="#0F172A">12 + 9 = 31</text>'+
+  '<ellipse cx="206" cy="48" rx="22" ry="12" fill="none" stroke="#EF4444" stroke-width="3" style="animation:sn-blink 1s infinite"/>'+
+  snPerson(40,'#64748B',{look:3,up:-2,y:134})+snPerson(112,'#0EA5E9',{look:2,up:-2})+snPerson(176,'#A855F7',{look:0,up:-2})+snPerson(240,'#14B8A6',{look:-2,up:-2})+
+  snPerson(292,'#3B82F6',{bob:2.4})+
+  '<path d="M278 96 L246 60" stroke="#92400E" stroke-width="3" stroke-linecap="round"/>')
+];
+EMOTIONS.forEach(function(q,i){ q.scene=SN_SCENES[i]; });
+function shuffle(arr){var a=arr.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function hearts(n){return n>0?"\u2665".repeat(n):"\u2014";}
+function initEmotion(){
+  eRound=0; eCorrect=0; eAnswering=false;
+  renderEmotion(); show("s-emotion");
+}
+function renderEmotion(){
+  if(eRound>=EMOTIONS.length){endEmotion();return;}
+  eAnswering=false;
+  var q=EMOTIONS[eRound];
+  makeDots("e-dots",eTotal,eRound,eRound);
+  document.getElementById("e-face").innerHTML=q.scene;
+  document.getElementById("e-desc").textContent=q.desc;
+  var v=document.getElementById("e-verdict"); v.textContent=""; v.className="verdict";
+  var opts=shuffle(q.opts.slice());
+  var box=document.getElementById("emotion-opts"); box.innerHTML="";
+  opts.forEach(function(o){
+    var b=document.createElement("button"); b.className="emo-btn"; b.textContent=o;
+    b.onclick=function(){emotionAnswer(o,b);};
+    box.appendChild(b);
+  });
+  startBar("e-time",15000,function(){ if(!eAnswering) emotionAnswer(null,null); });
+}
+function emotionAnswer(ans,btn){
+  if(eAnswering) return;
+  eAnswering=true; stopBar("e-time");
+  var q=EMOTIONS[eRound];
+  if(ans===q.answer) eCorrect++;                  /* tallied silently */
+  if(btn) btn.classList.add("picked");
+  Array.from(document.getElementById("emotion-opts").children).forEach(function(b){
+    b.disabled=true; b.style.cursor="default";
+  });
+  var v=document.getElementById("e-verdict"); v.className="verdict";
+  v.textContent=(ans===null)?"Time\u2019s up \u2014 next\u2026":"Logged \u2014 next\u2026";
+  eRound++;
+  var done=(eRound>=eTotal);
+  setTimeout(done?endEmotion:renderEmotion, 850);
+}
+function endEmotion(){
+  stopBar("e-time");
+  scores.emotion=Math.round(eCorrect/eTotal*100);
+  advanceGame();
+}
+
+/* ═══════════════════════════════════════════════
+   GAME 7 — NUMBER CRUNCH
+═══════════════════════════════════════════════ */
+var nTimer=null, nRemaining=90, nCorrect=0, nWrong=0, nAttempted=0, nAnswer=0, nRunning=false;
+var N_OPS=["+","-","×","÷"];
+function genQuestion(){
+  var op=N_OPS[Math.floor(Math.random()*N_OPS.length)];
+  var a,b,ans;
+  if(op==="+"){a=Math.floor(Math.random()*50)+10;b=Math.floor(Math.random()*50)+10;ans=a+b;}
+  else if(op==="-"){a=Math.floor(Math.random()*50)+30;b=Math.floor(Math.random()*a);ans=a-b;}
+  else if(op==="×"){a=Math.floor(Math.random()*12)+2;b=Math.floor(Math.random()*12)+2;ans=a*b;}
+  else{b=Math.floor(Math.random()*10)+2;ans=Math.floor(Math.random()*12)+1;a=b*ans;}
+  nAnswer=ans;
+  document.getElementById("n-question").textContent=a+" "+op+" "+b;
+}
+function initNumber(){
+  nCorrect=0;nWrong=0;nAttempted=0;nRemaining=90;nRunning=true;
+  document.getElementById("n-correct").textContent=0;
+  document.getElementById("n-wrong").textContent=0;
+  document.getElementById("n-total").textContent=0;
+  document.getElementById("n-input").value="";
+  document.getElementById("n-bar").style.transition="none";
+  document.getElementById("n-bar").style.width="100%";
+  setTimeout(function(){
+    document.getElementById("n-bar").style.transition="width 90s linear";
+    document.getElementById("n-bar").style.width="0%";
+  },30);
+  genQuestion();
+  document.getElementById("n-timer-txt").textContent="1:30";
+  document.getElementById("n-input").focus();
+  document.getElementById("n-input").onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();submitNumber();}};
+  clearInterval(nTimer);
+  nTimer=setInterval(function(){
+    nRemaining--;
+    var m=Math.floor(nRemaining/60),s=nRemaining%60;
+    document.getElementById("n-timer-txt").textContent=m+":"+(s<10?"0":"")+s;
+    if(nRemaining<=0){clearInterval(nTimer);nRunning=false;endNumber();}
+  },1000);
+  show("s-number");
+}
+function submitNumber(){
+  if(!nRunning)return;
+  var val=parseInt(document.getElementById("n-input").value);
+  if(isNaN(val))return;
+  nAttempted++;
+  if(val===nAnswer){nCorrect++;} else{nWrong++;}   /* tallied silently */
+  document.getElementById("n-correct").textContent=nCorrect;
+  document.getElementById("n-wrong").textContent=nWrong;
+  document.getElementById("n-total").textContent=nAttempted;
+  setTimeout(function(){
+    document.getElementById("n-input").style.borderColor="";
+    document.getElementById("n-input").value="";
+    document.getElementById("n-input").focus();
+    genQuestion();
+  },250);
+}
+function endNumber(){
+  clearInterval(nTimer); nRunning=false;
+  document.getElementById("n-input").onkeydown=null;
+  var accuracy=nAttempted>0?nCorrect/nAttempted:0;
+  var speed=Math.min(1,nAttempted/25);
+  scores.number=Math.round((accuracy*0.6+speed*0.4)*100);
+  advanceGame();
+}
+
+/* ═══════════════════════════════════════════════
+   RESULTS
+═══════════════════════════════════════════════ */
+var TRAITS=[
+  {key:"risk",      name:"Risk Management",         color:"#9B59FF"},
+  {key:"memory",    name:"Working Memory",          color:"#C084FC"},
+  {key:"pattern",   name:"Logical Reasoning",       color:"#4ADE80"},
+  {key:"emotion",   name:"Emotional Intelligence",  color:"#F472B6"},
+  {key:"number",    name:"Numerical Speed",         color:"#F97316"},
+  {key:"boundaries",name:"Professional Boundaries", color:"#60A5FA"},
+  {key:"culture",   name:"Maintaining Culture",     color:"#2DD4BF"},
+  {key:"discipline",name:"Discipline",              color:"#E879F9"},
+];
+function showResults(){
+  guardStop();
+  show("s-result"); launchConfetti();
+  var total=0; TRAITS.forEach(function(t){total+=scores[t.key];});
+  var overall=Math.round(total/TRAITS.length);
+  setTimeout(function(){
+    var circ=314, offset=circ-(circ*overall/100);
+    document.getElementById("ring-fill").style.strokeDashoffset=offset;
+    animNum(document.getElementById("overall-score"),0,overall,900,"%");
+  },300);
+  var bars=document.getElementById("trait-bars"); bars.innerHTML="";
+  TRAITS.forEach(function(t,i){
+    var row=document.createElement("div"); row.className="trait-row";
+    row.innerHTML='<span class="trait-name">'+t.name+'</span>'+
+      '<div class="trait-track"><div class="trait-fill" id="tf'+i+'" style="background:'+t.color+'"></div></div>'+
+      '<span class="trait-val">'+scores[t.key]+'%</span>';
+    bars.appendChild(row);
+    setTimeout(function(){var f=document.getElementById("tf"+i);if(f)f.style.width=scores[t.key]+"%";},400+i*150);
+  });
+  sendResult({
+    test:"games",
+    candidate_name:candidateName,
+    candidate_email:candidateEmail,
+    score:overall,
+    tab_switches:tabSwitches,
+    duration_sec:Math.round((Date.now()-assessmentStart)/1000),
+    answers:scores
+  });
+}
+var SUPABASE_URL="https://bjwyunkxrgqcmtuyywvh.supabase.co";
+var SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqd3l1bmt4cmdxY210dXl5d3ZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE1MjQ2MTQsImV4cCI6MjEwNzEwMDYxNH0.ww00QTg5hqE0kVnqcq-cs8w3vKf2GImb6_8ymzDYtDo";
+function sendResult(payload){
+  return fetch(SUPABASE_URL+"/rest/v1/submissions",{
+    method:"POST",
+    headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,
+      "Content-Type":"application/json","Prefer":"return=minimal"},
+    body:JSON.stringify(payload)
+  }).then(function(r){return r.ok;}).catch(function(e){console.error(e);return false;});
+}
+function animNum(el,from,to,dur,suffix){
+  var t0=performance.now();
+  function step(t){var k=Math.min(1,(t-t0)/dur);var e=1-Math.pow(1-k,3);
+    el.textContent=Math.round(from+(to-from)*e)+(suffix||"");if(k<1)requestAnimationFrame(step);}
+  requestAnimationFrame(step);
+}
+function launchConfetti(){
+  var wrap=document.getElementById("confetti");
+  var cols=["#9B59FF","#C084FC","#F472B6","#22D3EE","#4ADE80","#FBBF24"];
+  for(var i=0;i<90;i++){
+    setTimeout(function(){
+      var p=document.createElement("div"); p.className="cp";
+      var sz=6+Math.random()*9;
+      p.style.cssText="width:"+sz+"px;height:"+sz+"px;left:"+Math.random()*100+"%;top:-20px;"+
+        "background:"+cols[Math.floor(Math.random()*cols.length)]+";"+
+        "border-radius:"+(Math.random()>.5?"50%":"3px")+";"+
+        "animation-duration:"+(2.5+Math.random()*2)+"s;transform:rotate("+(Math.random()*360)+"deg);opacity:1;";
+      wrap.appendChild(p); setTimeout(function(){p.remove();},5000);
+    },i*35);
+  }
+}
+</script>
+</body>
+</html>
