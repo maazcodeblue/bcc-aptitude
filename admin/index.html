@@ -81,7 +81,7 @@
   <header>
     <b>BCC Submissions</b>
     <span class="sp"></span>
-    <button class="btn primary" id="sendAllBtn">Send Results to All</button>
+    <button class="btn primary" id="sendAllBtn">Send Results to All (0)</button>
     <button class="btn" id="refreshBtn">Refresh</button>
     <button class="btn" id="csvBtn">Export CSV</button>
     <button class="btn" id="logoutBtn">Sign out</button>
@@ -215,6 +215,97 @@ function filtered(){
 }
 const isPass = d => !d.flagged && (d.passed === true || (d.passed == null && d.score >= 60));
 
+const QUESTION_BANKS = {
+  aptitude: [
+    { options: ["20%","25%","30%","33%"], answer: 1 },
+    { options: ["$7,200","$7,460","$7,560","$8,100"], answer: 2 },
+    { options: ["1,200","1,500","1,800","2,000"], answer: 1 },
+    { options: ["True","False","Cannot Say"], answer: 1 },
+    { options: ["True","False","Cannot Say"], answer: 2 },
+    { options: ["True","False","Cannot Say"], answer: 0 },
+    { options: ["36","40","42","44"], answer: 2 },
+    { options: ["162","216","243","324"], answer: 2 },
+    { options: ["All Lazzies are Bloops","All Bloops are Lazzies","Some Lazzies are not Razzies","No Bloops are Lazzies"], answer: 1 },
+    { options: ["Say nothing — it isn't your report.","Quietly fix it yourself without telling them.","Privately flag it to the colleague so they can correct it before sending.","Raise the mistake in the next team meeting."], answer: 2 },
+    { options: ["Accept it and hope it works out.","Raise your concerns with your manager and propose a revised timeline or priorities.","Miss the deadline and explain afterwards.","Vent to colleagues about the pressure."], answer: 1 },
+    { options: ["Quietly do their share to keep the project moving.","Report them to management straight away.","Speak with them directly to understand the issue and agree next steps.","Ignore it and focus only on your own work."], answer: 2 }
+  ],
+  bluecascade: [
+    { q: "A jacket costs $80", opts: ["$96","$100","$64","$120"], ans: 1 },
+    { q: "What is 15% of 240", opts: ["24","30","36","48"], ans: 2 },
+    { q: "A train travels 240 km", ans: "80 km/h" },
+    { q: "Two amounts are split in the ratio 3 : 5", opts: ["24","32","40","48"], ans: 2 },
+    { q: "Find the next number in the series", ans: "42" },
+    { q: "What is the average of 10, 20, 30", opts: ["25","30","35","40"], ans: 1 },
+    { q: "Five tasks each take 2 days", ans: "10 days" },
+    { q: "All cats are animals", opts: ["All cats are pets","Some cats are pets","All pets are cats","None of these must be true"], ans: 3 },
+    { q: "If it rains, the ground gets wet", ans: "False" },
+    { q: "Which one does NOT belong", opts: ["Square","Circle","Triangle","Cube"], ans: 3 },
+    { q: "Complete the pattern: AZ, BY, CX", opts: ["DV","DW","EW","CW"], ans: 1 },
+    { q: "Select ALL of the prime numbers", opts: ["2","9","11","15","17"], ans: [0,2,4] },
+    { q: "Pointing at a photo", opts: ["His mother","His sister","His daughter","His aunt"], ans: 1 },
+    { q: "closest in meaning to “abundant”", opts: ["Scarce","Plentiful","Hollow","Rare"], ans: 1 },
+    { q: "antonym of “transparent”", opts: ["Clear","Opaque","Visible","Sheer"], ans: 1 },
+    { q: "Which word is spelled correctly", opts: ["Acommodate","Accomodate","Accommodate","Acomodate"], ans: 2 },
+    { q: "Neither the players nor the coach", opts: ["were","was","are","have"], ans: 1 },
+    { q: "“affect” is most often a verb", ans: "True" },
+    { q: "You realize a project deadline is now at risk", opts: ["Keep working quietly","Tell your manager early and bring options","Wait until the deadline to explain","Ask a teammate to take the blame"], ans: 1 },
+    { q: "team meeting more productive", opts: ["Share an agenda beforehand","Start on time","Let it run over with no limit","Assign clear action items"], ans: [0,1,3] },
+    { q: "A customer is upset about a shipping delay", opts: ["Explain it is not your department","Acknowledge it, apologize, and give a clear next step","Offer no reply until it is resolved","Tell them delays are normal"], ans: 1 }
+  ]
+};
+
+const GAME_TRAITS = {
+  risk: { name: "Risk Management", icon: "🎲", section: "Risk Tolerance & Decisions" },
+  memory: { name: "Working Memory", icon: "🧠", section: "Spatial Recall & Capacity" },
+  pattern: { name: "Logical Reasoning", icon: "🧩", section: "Inductive & Pattern Logic" },
+  emotion: { name: "Emotional Intelligence", icon: "❤️", section: "Empathy & Interpersonal" },
+  number: { name: "Numerical Speed", icon: "🔢", section: "Quantitative Speed & Math" },
+  boundaries: { name: "Professional Boundaries", icon: "🛡️", section: "Workplace Ethics & Limits" },
+  culture: { name: "Maintaining Culture", icon: "🤝", section: "Culture & Team Alignment" },
+  discipline: { name: "Discipline & Focus", icon: "⏱️", section: "Focus, Impulse & Timing" }
+};
+const GAME_TRAIT_ORDER = ["risk", "memory", "pattern", "emotion", "number", "boundaries", "culture", "discipline"];
+
+function resolveAnswer(test, a, i) {
+  let userText = "", correctText = "";
+  const resp = a.response;
+
+  if (test === "aptitude") {
+    const qDef = QUESTION_BANKS.aptitude[i];
+    if (qDef) {
+      userText = (resp != null && qDef.options[resp] !== undefined)
+        ? qDef.options[resp]
+        : (resp != null ? String(resp) : "No answer");
+      correctText = qDef.options[qDef.answer] !== undefined
+        ? qDef.options[qDef.answer]
+        : String(qDef.answer);
+      return { userText, correctText };
+    }
+  }
+
+  if (test === "bluecascade") {
+    const qText = (a.question || "").toLowerCase();
+    const qDef = QUESTION_BANKS.bluecascade.find(b => qText.includes(b.q.toLowerCase()));
+    if (qDef) {
+      if (qDef.opts) {
+        if (Array.isArray(resp)) userText = resp.map(r => qDef.opts[r] || r).join(", ");
+        else userText = (resp != null && qDef.opts[resp] !== undefined) ? qDef.opts[resp] : String(resp ?? "No answer");
+        if (Array.isArray(qDef.ans)) correctText = qDef.ans.map(r => qDef.opts[r] || r).join(", ");
+        else correctText = qDef.opts[qDef.ans] !== undefined ? qDef.opts[qDef.ans] : String(qDef.ans);
+      } else {
+        userText = String(resp ?? "No answer");
+        correctText = String(qDef.ans);
+      }
+      return { userText, correctText };
+    }
+  }
+
+  userText = resp != null ? (typeof resp === "object" ? JSON.stringify(resp) : String(resp)) : "No answer";
+  correctText = a.correct ? userText : "—";
+  return { userText, correctText };
+}
+
 function render(){
   const rows = filtered().sort((a,b)=>{
     const x=a[sortKey], y=b[sortKey];
@@ -231,6 +322,12 @@ function render(){
     <div class="stat"><b>${cnt("aptitude")} / ${cnt("bluecascade")} / ${cnt("games")}</b><span>Aptitude / BlueCascade / Games</span></div>
     <div class="stat"><b style="color:var(--bad)">${rows.filter(d=>d.flagged).length}</b><span>Flagged</span></div>`;
 
+  const eligible = rows.filter(d=>d.candidate_email && d.score != null);
+  const sendAllEl = $("sendAllBtn");
+  if(sendAllEl && (!sendAllEl.disabled || sendAllEl.textContent.startsWith("Send Results to All"))){
+    sendAllEl.textContent = `Send Results to All (${eligible.length})`;
+  }
+
   if(!rows.length){ $("rows").innerHTML = `<tr><td colspan="9" class="empty">No submissions yet.</td></tr>`; return; }
   $("rows").innerHTML = rows.map(d => {
     const pass = isPass(d);
@@ -242,13 +339,68 @@ function render(){
       <td>${d.tab_switches==null?"—":esc(d.tab_switches)}</td><td>${fmtDur(d.duration_sec)}</td>
       <td><button class="btn sm" data-send="${esc(d.id)}" style="background:var(--accent-weak);color:var(--accent);border-color:var(--accent);white-space:nowrap">Send Result</button></td></tr>`;
     if(open===d.id){
-      const items = Array.isArray(d.answers) ? d.answers : [];
-      const secs = (!Array.isArray(d.answers) && d.answers && typeof d.answers==="object") ? Object.entries(d.answers) : [];
+      let answersData = d.answers;
+      if (typeof answersData === "string") {
+        try { answersData = JSON.parse(answersData); } catch(e){}
+      }
+      const items = Array.isArray(answersData) ? answersData : [];
+      let secs = (!Array.isArray(answersData) && answersData && typeof answersData === "object") ? Object.entries(answersData) : [];
+
+      if (secs.length) {
+        secs.sort(([a], [b]) => {
+          const ia = GAME_TRAIT_ORDER.indexOf(a), ib = GAME_TRAIT_ORDER.indexOf(b);
+          return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+        });
+      }
+
+      let parts = [];
+      if (items.length) {
+        parts.push(`<div class="ans">${items.map((a,i)=>{
+          const { userText, correctText } = resolveAnswer(d.test, a, i);
+          return `<div class="a">
+            <i class="${a.correct?"ok":"no"}">${a.correct?"✓":"✕"}</i>
+            <div style="flex:1">
+              <div>${i+1}. ${esc(a.question)} <small style="color:var(--muted)">[${esc(a.section)}]</small></div>
+              <div style="margin-top:3px;font-size:.84rem">
+                ${a.correct
+                  ? `<span style="color:var(--good)"><b>Answer:</b> ${esc(userText)}</span>`
+                  : `<span style="color:var(--bad);margin-right:16px"><b>User answer:</b> ${esc(userText)}</span>
+                     <span style="color:var(--good)"><b>Correct answer:</b> ${esc(correctText)}</span>`
+                }
+              </div>
+            </div>
+          </div>`;
+        }).join("")}</div>`);
+      }
+      if (secs.length) {
+        parts.push(`<div class="ans" style="${items.length ? "margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);" : ""}">${secs.map(([k,v], i)=>{
+          const tDef = GAME_TRAITS[k] || { name: k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g, " "), icon: "🎮", section: "Game Module" };
+          const num = Number(v) || 0;
+          const passed = num >= 60;
+          return `<div class="a">
+            <i class="${passed ? "ok" : "no"}">${passed ? "✓" : "✕"}</i>
+            <div style="flex:1">
+              <div>${i+1}. ${tDef.icon} <b>${esc(tDef.name)}</b> <small style="color:var(--muted)">[${esc(tDef.section)}]</small></div>
+              <div style="margin-top:3px;display:flex;align-items:center;flex-wrap:wrap;gap:10px;font-size:.84rem">
+                ${passed
+                  ? `<span style="color:var(--good)"><b>Score:</b> ${num}% (Passed)</span>`
+                  : `<span style="color:var(--bad)"><b>Score:</b> ${num}% (Needs Improvement)</span>
+                     <span style="color:var(--muted)"><b>Benchmark:</b> 60%+</span>`
+                }
+                <div style="width:90px;height:6px;background:var(--line);border-radius:99px;overflow:hidden;display:inline-block">
+                  <div style="width:${Math.max(0, Math.min(100, num))}%;height:100%;background:${passed ? "var(--good)" : "var(--bad)"};border-radius:99px"></div>
+                </div>
+              </div>
+            </div>
+          </div>`;
+        }).join("")}</div>`);
+      }
+
+      const detailContent = parts.join("") || `<div class="ans"><small>No answer detail.</small></div>`;
+
       html += `<tr class="detail"><td colspan="9">
         <small>ID: ${esc(d.candidate_id||"—")} · Invite code: ${esc(d.invite_code||"—")} · Full-screen exits: ${esc(d.fullscreen_exits ?? 0)}${d.flagged?" · Ended early: exited full screen twice":""}</small>
-        ${secs.length ? `<div class="ans">${secs.map(([k,v])=>`<div class="a"><span><b>${esc(k)}</b>: ${esc(v)}%</span></div>`).join("")}</div>` : ""}
-        <div class="ans">${items.map((a,i)=>`<div class="a"><i class="${a.correct?"ok":"no"}">${a.correct?"✓":"✕"}</i>
-          <span>${i+1}. ${esc(a.question)} <small>[${esc(a.section)}] — answer: ${esc(JSON.stringify(a.response))}</small></span></div>`).join("") || "<small>No answer detail.</small>"}</div>
+        ${detailContent}
       </td></tr>`;
     }
     return html;
@@ -330,7 +482,11 @@ async function sendAllResults() {
   }
 
   btn.textContent = `Sent (${sent}/${list.length}) ✓`;
-  setTimeout(() => { btn.disabled = false; btn.textContent = orig; }, 4000);
+  setTimeout(() => {
+    btn.disabled = false;
+    const currentCount = filtered().filter(d=>d.candidate_email && d.score != null).length;
+    btn.textContent = `Send Results to All (${currentCount})`;
+  }, 4000);
 }
 
 $("sendAllBtn").onclick = sendAllResults;

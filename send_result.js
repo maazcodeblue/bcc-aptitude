@@ -40,13 +40,18 @@ function normalizeSubmission(raw = {}) {
     ? new Date(raw.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
     : "October 13, 2026";
 
-  // Dynamic section calculation from answers array
+  let rawAnswers = raw.answers;
+  if (typeof rawAnswers === "string") {
+    try { rawAnswers = JSON.parse(rawAnswers); } catch(e){}
+  }
+
+  // Dynamic section calculation from answers array or trait score map
   let sections = [];
   const icons = { "Numerical Reasoning": "📊", "Verbal Reasoning": "📝", "Inductive & Logical": "🧩", "Situational Judgment": "⚖️" };
 
-  if (Array.isArray(raw.answers) && raw.answers.length > 0) {
+  if (Array.isArray(rawAnswers) && rawAnswers.length > 0) {
     const map = {};
-    raw.answers.forEach(a => {
+    rawAnswers.forEach(a => {
       const s = a.section || "General Reasoning";
       if (!map[s]) map[s] = { name: s, correct: 0, total: 0 };
       map[s].total++;
@@ -60,6 +65,37 @@ function normalizeSubmission(raw = {}) {
         icon: icons[s.name] || "📋",
         correct: s.correct,
         total: s.total,
+        ratioLabel: `${s.correct} / ${s.total}`,
+        pct,
+        color: isAmber ? "#d97706" : "#0d9488",
+        bg: isAmber ? "#fef3c7" : "#ccfbf1",
+      };
+    });
+  } else if (rawAnswers && typeof rawAnswers === "object") {
+    const gameTraits = {
+      risk: { name: "Risk Management", icon: "🎲" },
+      memory: { name: "Working Memory", icon: "🧠" },
+      pattern: { name: "Logical Reasoning", icon: "🧩" },
+      emotion: { name: "Emotional Intelligence", icon: "❤️" },
+      number: { name: "Numerical Speed", icon: "🔢" },
+      boundaries: { name: "Professional Boundaries", icon: "🛡️" },
+      culture: { name: "Maintaining Culture", icon: "🤝" },
+      discipline: { name: "Discipline & Focus", icon: "⏱️" }
+    };
+    const traitOrder = ["risk", "memory", "pattern", "emotion", "number", "boundaries", "culture", "discipline"];
+    const entries = Object.entries(rawAnswers).sort(([a], [b]) => {
+      const ia = traitOrder.indexOf(a), ib = traitOrder.indexOf(b);
+      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+    });
+
+    sections = entries.map(([key, val]) => {
+      const def = gameTraits[key] || { name: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, " "), icon: "🎮" };
+      const pct = Math.max(0, Math.min(100, Math.round(Number(val) || 0)));
+      const isAmber = pct < 50;
+      return {
+        name: def.name,
+        icon: def.icon,
+        ratioLabel: pct >= 60 ? "Benchmark Met" : "Below Benchmark",
         pct,
         color: isAmber ? "#d97706" : "#0d9488",
         bg: isAmber ? "#fef3c7" : "#ccfbf1",
@@ -67,13 +103,13 @@ function normalizeSubmission(raw = {}) {
     });
   }
 
-  // Fallback default sections if answers detail isn't an array
+  // Fallback default sections if answers detail isn't available
   if (!sections.length) {
     sections = [
-      { name: "Numerical Reasoning", icon: "📊", correct: 2, total: 3, pct: 67, color: "#0d9488", bg: "#ccfbf1" },
-      { name: "Verbal Reasoning", icon: "📝", correct: 2, total: 3, pct: 67, color: "#0d9488", bg: "#ccfbf1" },
-      { name: "Inductive & Logical", icon: "🧩", correct: 1, total: 3, pct: 33, color: "#d97706", bg: "#fef3c7" },
-      { name: "Situational Judgment", icon: "⚖️", correct: 2, total: 3, pct: 67, color: "#0d9488", bg: "#ccfbf1" },
+      { name: "Numerical Reasoning", icon: "📊", correct: 2, total: 3, ratioLabel: "2 / 3", pct: 67, color: "#0d9488", bg: "#ccfbf1" },
+      { name: "Verbal Reasoning", icon: "📝", correct: 2, total: 3, ratioLabel: "2 / 3", pct: 67, color: "#0d9488", bg: "#ccfbf1" },
+      { name: "Inductive & Logical", icon: "🧩", correct: 1, total: 3, ratioLabel: "1 / 3", pct: 33, color: "#d97706", bg: "#fef3c7" },
+      { name: "Situational Judgment", icon: "⚖️", correct: 2, total: 3, ratioLabel: "2 / 3", pct: 67, color: "#0d9488", bg: "#ccfbf1" },
     ];
   }
 
@@ -97,7 +133,7 @@ function buildEmailHtml(raw) {
                 <span style="font-size:14px;font-weight:700;color:#0f172a;vertical-align:middle;">${s.name}</span>
               </td>
               <td style="vertical-align:middle;text-align:right;white-space:nowrap;">
-                <span style="font-size:12.5px;font-weight:600;color:#64748b;margin-right:10px;vertical-align:middle;">${s.correct} / ${s.total}</span>
+                <span style="font-size:12.5px;font-weight:600;color:#64748b;margin-right:10px;vertical-align:middle;">${s.ratioLabel || (s.total != null ? `${s.correct} / ${s.total}` : "")}</span>
                 <span style="display:inline-block;background:${s.bg};color:${s.color};font-size:12px;font-weight:800;padding:3px 9px;border-radius:6px;vertical-align:middle;">
                   ${s.pct}%
                 </span>
@@ -298,6 +334,25 @@ function getTransporter() {
   const pass = process.env.SMTP_PASS;
 
   if (user && pass) {
+    if (process.env.SMTP_HOST) {
+      return nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT) || 465,
+        secure: process.env.SMTP_SECURE !== "false",
+        auth: { user, pass },
+      });
+    }
+
+    // Auto-detect Zoho Mail for @bluecascade.org
+    if (user.toLowerCase().includes("@bluecascade.org") || user.toLowerCase().includes("@zoho")) {
+      return nodemailer.createTransport({
+        host: "smtp.zoho.com",
+        port: 465,
+        secure: true,
+        auth: { user, pass },
+      });
+    }
+
     return nodemailer.createTransport({
       service: process.env.SMTP_SERVICE || "gmail",
       auth: { user, pass },
@@ -384,7 +439,7 @@ function startServer() {
   });
 }
 
-module.exports = { buildEmailHtml, sendResultEmail, startServer };
+module.exports = { normalizeSubmission, buildEmailHtml, sendResultEmail, startServer };
 
 if (require.main === module) {
   startServer();
