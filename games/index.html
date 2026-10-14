@@ -620,17 +620,9 @@ h2{font-family:"Playfair Display",serif;font-size:clamp(24px,6vw,34px);
 <!-- ═══ RESULTS ═══ -->
 <section class="screen" id="s-result">
   <p class="game-label">Assessment Complete</p>
-  <h2 class="glow-text">Your profile</h2>
-  <p class="sub">Here is what your performance across the games reveals.</p>
-  <div class="score-ring">
-    <svg viewBox="0 0 120 120"><circle class="ring-bg" cx="60" cy="60" r="50"/><circle class="ring-fill" id="ring-fill" cx="60" cy="60" r="50"/></svg>
-    <div class="score-num" id="overall-score">0%</div>
-  </div>
-  <div class="card" style="width:100%;">
-    <div class="trait-bars" id="trait-bars"></div>
-  </div>
+  <h2 class="glow-text">Thank you</h2>
   <div class="card" style="width:100%;margin-top:14px;text-align:center;">
-    <p style="font-size:15px;color:var(--soft);line-height:1.7;">Your responses have been submitted. Our team will review your profile and be in touch shortly. You may close this tab.</p>
+    <p style="font-size:15px;color:var(--soft);line-height:1.7;">Thank you for completing the assessment. Your responses have been submitted. Our team will review your profile and be in touch shortly. You may close this tab.</p>
   </div>
 </section>
 
@@ -1429,20 +1421,6 @@ function showResults(){
   show("s-result"); launchConfetti();
   var total=0; TRAITS.forEach(function(t){total+=scores[t.key];});
   var overall=Math.round(total/TRAITS.length);
-  setTimeout(function(){
-    var circ=314, offset=circ-(circ*overall/100);
-    document.getElementById("ring-fill").style.strokeDashoffset=offset;
-    animNum(document.getElementById("overall-score"),0,overall,900,"%");
-  },300);
-  var bars=document.getElementById("trait-bars"); bars.innerHTML="";
-  TRAITS.forEach(function(t,i){
-    var row=document.createElement("div"); row.className="trait-row";
-    row.innerHTML='<span class="trait-name">'+t.name+'</span>'+
-      '<div class="trait-track"><div class="trait-fill" id="tf'+i+'" style="background:'+t.color+'"></div></div>'+
-      '<span class="trait-val">'+scores[t.key]+'%</span>';
-    bars.appendChild(row);
-    setTimeout(function(){var f=document.getElementById("tf"+i);if(f)f.style.width=scores[t.key]+"%";},400+i*150);
-  });
   sendResult({
     test:"games",
     candidate_name:candidateName,

@@ -681,51 +681,8 @@ function finish(){
     answers:QUESTIONS.map((q,i)=>({section:q.section,question:q.prompt,response:answers[i],correct:answers[i]===q.answer}))
   });
 
-  let verdict, line;
-  if(pct>=85){ verdict="Strong performance"; line="You'd comfortably clear the threshold on most screening sifts at this level."; }
-  else if(pct>=60){ verdict="Solid, with room to sharpen"; line="A competitive score. Review the misses below to tighten speed and accuracy."; }
-  else if(pct>=40){ verdict="Developing"; line="The fundamentals are there — focused practice on weaker sections will move this quickly."; }
-  else { verdict="Needs practice"; line="Work through the explanations below; the patterns repeat across most tests of this kind."; }
-
-  // gauge
-  const R=52, C=2*Math.PI*R, off=C*(1-pct/100);
-
-  let html = `
-    <span class="tag">Your results</span>
-    <div class="score-head" style="margin-top:14px">
-      <div class="gauge">
-        <svg width="132" height="132" viewBox="0 0 132 132">
-          <circle cx="66" cy="66" r="${R}" fill="none" stroke="var(--line)" stroke-width="12"/>
-          <circle cx="66" cy="66" r="${R}" fill="none" stroke="var(--accent)" stroke-width="12"
-            stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${C.toFixed(1)}"
-            id="gaugeArc"/>
-        </svg>
-        <div class="val"><b>${pct}%</b><span class="mono">${correct} / ${QUESTIONS.length}</span></div>
-      </div>
-      <div class="verdict"><h2>${verdict}</h2><p>${line}</p></div>
-    </div>
-    <div class="breakdown">`;
-
-  Object.keys(bySection).forEach(name=>{
-    const s = bySection[name];
-    const p = Math.round(s.c/s.t*100);
-    html += `
-      <div class="bd">
-        <div class="bd-top"><span class="name">${name}</span><span class="frac mono">${s.c}/${s.t}</span></div>
-        <div class="bar2"><i style="width:${p}%"></i></div>
-      </div>`;
-  });
-  html += `</div><div class="note" style="margin-top:30px">Thank you for completing the assessment. Your responses have been submitted to the hiring team.</div>`;
-
-  screens.results.innerHTML = html;
+  screens.results.innerHTML = `<span class="tag">Completed</span><h2 style="margin-top:14px">Thank you</h2><div class="note" style="margin-top:20px">Thank you for completing the assessment. Your responses have been submitted to the hiring team.</div>`;
   show("results");
-
-  // animate gauge
-  requestAnimationFrame(()=>{ requestAnimationFrame(()=>{
-    const arc = $("gaugeArc");
-    if(arc){ arc.style.transition="stroke-dashoffset 1s cubic-bezier(.2,.7,.2,1)"; arc.style.strokeDashoffset=off.toFixed(1); }
-  });});
-
 }
 
 function reset(){
