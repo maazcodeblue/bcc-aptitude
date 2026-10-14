@@ -485,7 +485,7 @@ const BC = (function(){
   const hide = () => { if (box) box.style.display = "none"; };
 
   function refuse(reason){
-    if (reason === "domain") ui("Not eligible", "You are not eligible to take this assessment. Only @bluecascade.org email addresses are allowed.", "OK", hide);
+    if (reason === "domain") ui("Not eligible", "You are not eligible to take this assessment.", "OK", hide);
     else if (reason === "blocked") ui("Not eligible", "You are not eligible to attempt this assessment.", "OK", hide);
     else ui("Full screen required", "This assessment must run in full screen. Please allow full screen and try again.", "OK", hide);
   }
