@@ -916,7 +916,7 @@ const BC = (function(){
 
   async function disqualify(){
     on = false; dq = true;
-    ui("Assessment ended", "You exited full screen again. Your attempt has been ended and flagged, and this email address is no longer allowed to take this assessment.");
+    ui("Assessment ended", "You exited full screen again. Your attempt has been ended and flagged, and you are not allowed to take this assessment.");
     if (handler) { try { handler(); } catch (e) {} }
     try { await rpc("block_email", {p_email: email, p_reason: "Exited full screen twice"}); } catch (e) {}
   }
