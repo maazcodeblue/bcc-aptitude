@@ -6,57 +6,70 @@
 <meta name="robots" content="noindex,nofollow">
 <title>BCC Admin</title>
 <style>
-  :root{--bg:#eef0f3;--surface:#fff;--surface2:#f7f8fa;--ink:#121820;--muted:#5c6675;--line:#e0e4ea;--accent:#0e7c74;--accent-weak:#e2f1ef;--good:#1f7a43;--bad:#c02626;--warn:#b45309}
-  @media (prefers-color-scheme:dark){:root{--bg:#0d1117;--surface:#161b22;--surface2:#1c222b;--ink:#e8ebef;--muted:#9aa4b2;--line:#262d38;--accent:#2dd4bf;--accent-weak:#13302d;--good:#34d399;--bad:#f87171;--warn:#f59e0b}}
+  :root {
+    color-scheme: light;
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --surface2: #f8fafc;
+    --ink: #0f172a;
+    --muted: #475569;
+    --line: #e2e8f0;
+    --line-strong: #cbd5e1;
+    --accent: #0d9488;
+    --accent-weak: #ccfbf1;
+    --good: #16a34a;
+    --bad: #dc2626;
+    --warn: #d97706;
+  }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
   .hidden{display:none!important}
   button,input,select{font:inherit}
-  input,select{padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}
+  input,select{padding:10px 12px;border:1.5px solid var(--line-strong);border-radius:10px;background:#ffffff;color:var(--ink)}
   input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px}
-  .btn{padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;font-weight:500}
+  .btn{padding:10px 16px;border-radius:10px;border:1px solid var(--line-strong);background:#ffffff;color:var(--ink);cursor:pointer;font-weight:500;transition:background .15s}
   .btn:hover{background:var(--surface2)}
-  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-  @media (prefers-color-scheme:dark){.btn.primary{color:#0d1117}}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#ffffff;font-weight:600}
+  .btn.primary:hover{background:#0f766e}
   .btn:disabled{opacity:.5;cursor:wait}
   .btn.sm{padding:4px 10px;font-size:.76rem;border-radius:7px;font-weight:600}
 
   /* login */
-  #login{min-height:100vh;display:grid;place-items:center;padding:16px}
-  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:28px;width:100%;max-width:380px;box-shadow:0 8px 28px rgba(0,0,0,.07)}
-  .card h1{margin:0 0 4px;font-size:1.4rem}
+  #login{min-height:100vh;display:grid;place-items:center;padding:16px;background:var(--bg)}
+  .card{background:#ffffff;border:1px solid var(--line);border-radius:14px;padding:28px;width:100%;max-width:380px;box-shadow:0 8px 28px rgba(15,23,42,.07);color:var(--ink)}
+  .card h1{margin:0 0 4px;font-size:1.4rem;color:var(--ink)}
   .card p{margin:0 0 20px;color:var(--muted)}
-  .card label{display:block;font-size:.85rem;font-weight:500;margin:14px 0 6px}
+  .card label{display:block;font-size:.85rem;font-weight:600;margin:14px 0 6px;color:var(--ink)}
   .card input{width:100%}
   .err{color:var(--bad);font-size:.88rem;margin-top:12px;min-height:1.2em}
 
   /* app */
-  header{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--line);padding:12px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-  header b{font-size:1.05rem}
+  header{position:sticky;top:0;z-index:5;background:#ffffff;border-bottom:1px solid var(--line);padding:12px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;color:var(--ink)}
+  header b{font-size:1.05rem;color:var(--ink)}
   header .sp{flex:1}
   main{max-width:1420px;margin:0 auto;padding:20px}
   .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
-  .stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
-  .stat b{display:block;font-size:1.6rem;letter-spacing:-.02em}
+  .stat{background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:0 1px 3px rgba(15,23,42,.04)}
+  .stat b{display:block;font-size:1.6rem;letter-spacing:-.02em;color:var(--ink)}
   .stat span{color:var(--muted);font-size:.82rem}
   .tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
   .tools input{flex:1;min-width:180px}
-  .tablewrap{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow-x:auto}
-  table{width:100%;border-collapse:collapse;min-width:880px}
-  th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap;font-size:13.5px}
-  th{background:var(--surface2);font-size:.76rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;cursor:pointer;user-select:none}
+  .tablewrap{background:#ffffff;border:1px solid var(--line);border-radius:12px;overflow-x:auto;box-shadow:0 1px 3px rgba(15,23,42,.04)}
+  table{width:100%;border-collapse:collapse;min-width:880px;background:#ffffff;color:var(--ink)}
+  th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap;font-size:13.5px;color:var(--ink)}
+  th{background:var(--surface2);font-size:.76rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;cursor:pointer;user-select:none;font-weight:600}
   tr.row{cursor:pointer}
   tr.row:hover td{background:var(--surface2)}
   tr:last-child td{border-bottom:0}
-  th:last-child,tr.row td:last-child{position:sticky;right:0;background:var(--surface);text-align:center;padding:6px 12px;box-shadow:-3px 0 8px rgba(0,0,0,.08)}
+  th:last-child,tr.row td:last-child{position:sticky;right:0;background:#ffffff;text-align:center;padding:6px 12px;box-shadow:-3px 0 8px rgba(15,23,42,.05)}
   th:last-child{background:var(--surface2)}
   tr.row:hover td:last-child{background:var(--surface2)}
-  .pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:.78rem;font-weight:600;background:var(--accent-weak);color:var(--accent)}
+  .pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:.78rem;font-weight:600;background:var(--accent-weak);color:#0f766e}
   .pass{color:var(--good);font-weight:600}.fail{color:var(--bad);font-weight:600}
   .empty{padding:40px;text-align:center;color:var(--muted)}
-  .detail td{background:var(--surface2);white-space:normal;padding:16px 20px}
+  .detail td{background:var(--surface2);white-space:normal;padding:16px 20px;color:var(--ink)}
   .ans{display:grid;gap:6px;margin-top:8px}
-  .a{display:flex;gap:10px;font-size:.88rem}
+  .a{display:flex;gap:10px;font-size:.88rem;color:var(--ink)}
   .a i{font-style:normal;font-weight:700;flex:0 0 1.4em}
   .a .ok{color:var(--good)}.a .no{color:var(--bad)}
   .a small{color:var(--muted)}
@@ -217,18 +230,18 @@ const isPass = d => !d.flagged && (d.passed === true || (d.passed == null && d.s
 
 const QUESTION_BANKS = {
   aptitude: [
-    { options: ["20%","25%","30%","33%"], answer: 1 },
-    { options: ["$7,200","$7,460","$7,560","$8,100"], answer: 2 },
-    { options: ["1,200","1,500","1,800","2,000"], answer: 1 },
-    { options: ["True","False","Cannot Say"], answer: 1 },
-    { options: ["True","False","Cannot Say"], answer: 2 },
-    { options: ["True","False","Cannot Say"], answer: 0 },
-    { options: ["36","40","42","44"], answer: 2 },
-    { options: ["162","216","243","324"], answer: 2 },
-    { options: ["All Lazzies are Bloops","All Bloops are Lazzies","Some Lazzies are not Razzies","No Bloops are Lazzies"], answer: 1 },
-    { options: ["Say nothing — it isn't your report.","Quietly fix it yourself without telling them.","Privately flag it to the colleague so they can correct it before sending.","Raise the mistake in the next team meeting."], answer: 2 },
-    { options: ["Accept it and hope it works out.","Raise your concerns with your manager and propose a revised timeline or priorities.","Miss the deadline and explain afterwards.","Vent to colleagues about the pressure."], answer: 1 },
-    { options: ["Quietly do their share to keep the project moving.","Report them to management straight away.","Speak with them directly to understand the issue and agree next steps.","Ignore it and focus only on your own work."], answer: 2 }
+    { q: "reported revenue", options: ["20%","25%","30%","33%"], answer: 1 },
+    { q: "combined revenue", options: ["$7,200","$7,460","$7,560","$8,100"], answer: 2 },
+    { q: "3 machines produce", options: ["1,200","1,500","1,800","2,000"], answer: 1 },
+    { q: "Contractors are permitted to work from home", options: ["True","False","Cannot Say"], answer: 1 },
+    { q: "flexible working policy was the main reason", options: ["True","False","Cannot Say"], answer: 2 },
+    { q: "Permanent staff may work part of the week", options: ["True","False","Cannot Say"], answer: 0 },
+    { q: "2,  6,  12,  20,  30", options: ["36","40","42","44"], answer: 2 },
+    { q: "3,  9,  27,  81", options: ["162","216","243","324"], answer: 2 },
+    { q: "All Bloops are Razzies", options: ["All Lazzies are Bloops","All Bloops are Lazzies","Some Lazzies are not Razzies","No Bloops are Lazzies"], answer: 1 },
+    { q: "spot an error in a report", options: ["Say nothing — it isn't your report.","Quietly fix it yourself without telling them.","Privately flag it to the colleague so they can correct it before sending.","Raise the mistake in the next team meeting."], answer: 2 },
+    { q: "deadline you believe is genuinely unrealistic", options: ["Accept it and hope it works out.","Raise your concerns with your manager and propose a revised timeline or priorities.","Miss the deadline and explain afterwards.","Vent to colleagues about the pressure."], answer: 1 },
+    { q: "teammate on a shared task is consistently not contributing", options: ["Quietly do their share to keep the project moving.","Report them to management straight away.","Speak with them directly to understand the issue and agree next steps.","Ignore it and focus only on your own work."], answer: 2 }
   ],
   bluecascade: [
     { q: "A jacket costs $80", opts: ["$96","$100","$64","$120"], ans: 1 },
@@ -271,8 +284,15 @@ function resolveAnswer(test, a, i) {
   let userText = "", correctText = "";
   const resp = a.response;
 
+  if (a.user_answer !== undefined || a.correct_answer !== undefined) {
+    userText = (a.user_answer != null && a.user_answer !== "") ? String(a.user_answer) : (resp != null ? String(resp) : "No answer");
+    correctText = (a.correct_answer != null && a.correct_answer !== "") ? String(a.correct_answer) : "—";
+    return { userText, correctText };
+  }
+
   if (test === "aptitude") {
-    const qDef = QUESTION_BANKS.aptitude[i];
+    const qText = (a.question || "").toLowerCase();
+    const qDef = (qText && QUESTION_BANKS.aptitude.find(b => b.q && qText.includes(b.q.toLowerCase()))) || QUESTION_BANKS.aptitude[i];
     if (qDef) {
       userText = (resp != null && qDef.options[resp] !== undefined)
         ? qDef.options[resp]

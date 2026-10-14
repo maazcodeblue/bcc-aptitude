@@ -57,7 +57,13 @@ function normalizeSubmission(raw = {}) {
       map[s].total++;
       if (a.correct) map[s].correct++;
     });
-    sections = Object.values(map).map(s => {
+    const sectionOrder = ["Numerical Reasoning", "Verbal Reasoning", "Inductive & Logical", "Situational Judgment"];
+    const entries = Object.values(map).sort((a, b) => {
+      const ia = sectionOrder.indexOf(a.name);
+      const ib = sectionOrder.indexOf(b.name);
+      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+    });
+    sections = entries.map(s => {
       const pct = s.total ? Math.round((s.correct / s.total) * 100) : 0;
       const isAmber = pct < 50;
       return {
