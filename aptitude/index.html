@@ -967,7 +967,7 @@
       const hide = () => { if (box) box.style.display = "none"; };
 
       function refuse(reason) {
-        if (reason === "domain") ui("Not eligible", "You are not eligible to take this assessment.", "OK", hide);
+        if (reason === "domain" || reason === "invalid_email") ui("Invalid email", "Please enter a valid email address.", "OK", hide);
         else if (reason === "blocked") ui("Not eligible", "You are not eligible to attempt this assessment.", "OK", hide);
         else if (reason === "done") ui("Already completed", "You have already completed this assessment. You cannot attempt it again.", "OK", hide);
         else ui("Full screen required", "This assessment must run in full screen. Please allow full screen and try again.", "OK", hide);
@@ -976,7 +976,7 @@
       // Call straight from the Start click so the browser allows full screen.
       async function begin(em, test) {
         email = String(em).trim().toLowerCase(); dq = false;
-        if (!/^[^\s@]+@bluecascade\.org$/.test(email)) return { ok: false, reason: "domain" };
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, reason: "invalid_email" };
         const fs = enterFS();
         let blocked = false, done = false;
         try { blocked = (await rpc("is_blocked", { p_email: email })) === true; } catch (e) { }
