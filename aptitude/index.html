@@ -1196,16 +1196,14 @@
             stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${C.toFixed(1)}"
             id="gaugeArc"/>
         </svg>
-        <div class="val"><b>${pct}%</b><span class="mono">${correct} / ${questions.length}</span></div>
+        <div class="val"><b>${pct}%</b><span class="mono">${correct} / ${QUESTIONS.length}</span></div>
       </div>
       <div class="verdict"><h2>${verdict}</h2><p>${line}</p></div>
     </div>
     <div class="breakdown">`;
 
-      const SECTION_ORDER = ["Numerical Reasoning", "Verbal Reasoning", "Inductive & Logical", "Situational Judgment"];
-      SECTION_ORDER.forEach(name => {
+      Object.keys(bySection).forEach(name => {
         const s = bySection[name];
-        if (!s) return;
         const p = Math.round(s.c / s.t * 100);
         html += `
       <div class="bd">
@@ -1213,7 +1211,7 @@
         <div class="bar2"><i style="width:${p}%"></i></div>
       </div>`;
       });
-      html += `</div><div class="note" style="margin-top:30px">Thank you for completing the assessment. Your responses have been submitted to the team.</div>`;
+      html += `</div><div class="note" style="margin-top:30px">Thank you for completing the assessment. Your responses have been submitted to the hiring team.</div>`;
 
       screens.results.innerHTML = html;
       show("results");

@@ -2379,7 +2379,7 @@
           answers: R.detail.map(d => ({ section: d.q.s, question: d.q.q, type: d.q.type, response: d.q.response, correct: d.ok }))
         }).then(ok => { if (!ok) { S.sent = false; store.save(S); } });
       }
-      renderResults(R);
+      renderGoodbye(); window.scrollTo(0, 0);
     }
 
     /* ============================================================
@@ -2532,7 +2532,6 @@
       wireTop();
       $("#restart").onclick = () => renderLogin();
     }
-
     /* ============================================================
        BOOT  — resume session if one exists
        ============================================================ */
@@ -2545,7 +2544,7 @@
           if (S.timeLeft <= 0) { finishTest(true); return; }
           BC.resume(S.candidate.email, () => { startTest(); toast("Welcome back — your session was restored."); }); return;
         }
-        if (S.phase === "results") { renderResults(computeResults()); return; }
+        if (S.phase === "results") { renderGoodbye(); return; }
       }
       renderLogin();
     })();
