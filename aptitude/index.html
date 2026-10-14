@@ -487,17 +487,19 @@ const BC = (function(){
   function refuse(reason){
     if (reason === "domain") ui("Not eligible", "You are not eligible to take this assessment.", "OK", hide);
     else if (reason === "blocked") ui("Not eligible", "You are not eligible to attempt this assessment.", "OK", hide);
+    else if (reason === "done") ui("Already completed", "You have already completed this assessment. You cannot attempt it again.", "OK", hide);
     else ui("Full screen required", "This assessment must run in full screen. Please allow full screen and try again.", "OK", hide);
   }
 
   // Call straight from the Start click so the browser allows full screen.
-  async function begin(em){
+  async function begin(em, test){
     email = String(em).trim().toLowerCase(); dq = false;
     if (!/^[^\s@]+@bluecascade\.org$/.test(email)) return {ok: false, reason: "domain"};
     const fs = enterFS();
-    let blocked = false;
+    let blocked = false, done = false;
     try { blocked = (await rpc("is_blocked", {p_email: email})) === true; } catch (e) {}
-    if (blocked) { await fs; exitFS(); return {ok: false, reason: "blocked"}; }
+    try { done = (await rpc("has_attempted", {p_test: test, p_email: email})) === true; } catch (e) {}
+    if (blocked || done) { await fs; exitFS(); return {ok: false, reason: blocked ? "blocked" : "done"}; }
     if ((await fs) === false) return {ok: false, reason: "fullscreen"};
     strikes = load();
     on = true;
@@ -569,7 +571,7 @@ async function startTest(){
   $("candErr").hidden = valid;
   if(!valid) return;
   $("startBtn").disabled = true;
-  const gate = await BC.begin(email);
+  const gate = await BC.begin(email, "aptitude");
   $("startBtn").disabled = false;
   if(!gate.ok){ BC.refuse(gate.reason); return; }
   candidate = {name,email};
