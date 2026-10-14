@@ -436,6 +436,117 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 let candidate = {name:"",email:""};
 let startedAt = 0;
 
+/* ============ BC integrity: domain lock, blocklist, full-screen strikes ============ */
+const BC = (function(){
+  const MAX_STRIKES = 2;
+  let email = "", on = false, dq = false, strikes = 0, handler = null, box = null;
+  const KEY = () => "bc_strikes_" + email;
+  const rpc = (fn, args) => fetch(SUPABASE_URL + "/rest/v1/rpc/" + fn, {
+    method: "POST",
+    headers: {apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY, "Content-Type": "application/json"},
+    body: JSON.stringify(args)
+  }).then(r => r.ok ? r.json() : Promise.reject(r.status));
+  const load = () => { try { return parseInt(localStorage.getItem(KEY()) || "0", 10) || 0; } catch (e) { return 0; } };
+  const save = () => { try { localStorage.setItem(KEY(), String(strikes)); } catch (e) {} };
+  const inFS = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+
+  function enterFS(){
+    const el = document.documentElement, rq = el.requestFullscreen || el.webkitRequestFullscreen;
+    if (!rq) return Promise.resolve("unsupported");
+    try { return Promise.resolve(rq.call(el)).then(() => true, () => false); } catch (e) { return Promise.resolve(false); }
+  }
+  function exitFS(){
+    try {
+      if (inFS()) {
+        const ex = document.exitFullscreen || document.webkitExitFullscreen;
+        const r = ex && ex.call(document);
+        if (r && r.catch) r.catch(() => {});
+      }
+    } catch (e) {}
+  }
+
+  function ui(title, msg, btn, onClick){
+    if (!box) {
+      const st = document.createElement("style");
+      st.textContent = ".bcg{position:fixed;inset:0;z-index:2147483000;display:none;place-items:center;padding:20px;background:rgba(8,10,16,.92);font:16px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif}" +
+        ".bcg>div{background:#fff;color:#121820;border-radius:16px;padding:28px;max-width:440px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5)}" +
+        ".bcg h3{margin:0 0 10px;font-size:1.3rem}.bcg p{margin:0 0 20px;color:#3b4552}" +
+        ".bcg button{font:inherit;font-weight:600;padding:12px 22px;border:0;border-radius:10px;background:#0e7c74;color:#fff;cursor:pointer}";
+      document.head.appendChild(st);
+      box = document.createElement("div"); box.className = "bcg";
+      document.body.appendChild(box);
+    }
+    box.innerHTML = "<div><h3></h3><p></p>" + (btn ? "<button></button>" : "") + "</div>";
+    box.querySelector("h3").textContent = title;
+    box.querySelector("p").textContent = msg;
+    if (btn) { const b = box.querySelector("button"); b.textContent = btn; b.onclick = onClick; }
+    box.style.display = "grid";
+  }
+  const hide = () => { if (box) box.style.display = "none"; };
+
+  function refuse(reason){
+    if (reason === "domain") ui("Not eligible", "You are not eligible to take this assessment. Only @bluecascade.org email addresses are allowed.", "OK", hide);
+    else if (reason === "blocked") ui("Not eligible", "You are not eligible to attempt this assessment.", "OK", hide);
+    else ui("Full screen required", "This assessment must run in full screen. Please allow full screen and try again.", "OK", hide);
+  }
+
+  // Call straight from the Start click so the browser allows full screen.
+  async function begin(em){
+    email = String(em).trim().toLowerCase(); dq = false;
+    if (!/^[^\s@]+@bluecascade\.org$/.test(email)) return {ok: false, reason: "domain"};
+    const fs = enterFS();
+    let blocked = false;
+    try { blocked = (await rpc("is_blocked", {p_email: email})) === true; } catch (e) {}
+    if (blocked) { await fs; exitFS(); return {ok: false, reason: "blocked"}; }
+    if ((await fs) === false) return {ok: false, reason: "fullscreen"};
+    strikes = load();
+    on = true;
+    return {ok: true};
+  }
+
+  function warn(text){
+    ui("Final warning", text, "Return to full screen", async () => {
+      if ((await enterFS()) !== false) hide();
+    });
+  }
+
+  function onFSChange(){
+    if (!on || inFS()) return;
+    strikes++; save();
+    if (strikes >= MAX_STRIKES) { disqualify(); return; }
+    warn("You exited full screen. This is your final warning: if you exit full screen again, you will not be allowed to attempt this assessment again.");
+  }
+
+  async function disqualify(){
+    on = false; dq = true;
+    ui("Assessment ended", "You exited full screen again. Your attempt has been ended and flagged, and this email address is no longer allowed to take this assessment.");
+    if (handler) { try { handler(); } catch (e) {} }
+    try { await rpc("block_email", {p_email: email, p_reason: "Exited full screen twice"}); } catch (e) {}
+  }
+
+  // A refresh mid-test loses full screen, so it counts as an exit.
+  function resume(em, cont){
+    email = String(em).trim().toLowerCase(); dq = false;
+    strikes = load() + 1; save();
+    if (strikes >= MAX_STRIKES) { disqualify(); return; }
+    ui("Final warning", "Your session was interrupted and full screen was lost. This is your final warning: if you exit full screen again, you will not be allowed to attempt this assessment again.", "Continue in full screen", async () => {
+      if ((await enterFS()) === false) return;
+      on = true; hide(); cont();
+    });
+  }
+
+  function end(){ on = false; try { localStorage.removeItem(KEY()); } catch (e) {} exitFS(); }
+
+  ["fullscreenchange", "webkitfullscreenchange"].forEach(ev => document.addEventListener(ev, onFSChange));
+  return {begin, resume, end, refuse, strikes: () => strikes, disqualified: () => dq, onDisqualify: f => { handler = f; }};
+})();
+
+BC.onDisqualify(()=>{
+  finished=true; clearInterval(ticker);
+  sendResult({test:"aptitude",candidate_name:candidate.name,candidate_email:candidate.email,flagged:true,fullscreen_exits:2,
+    duration_sec:Math.round((Date.now()-startedAt)/1000)});
+});
+
 async function sendResult(payload){
   try{
     const r = await fetch(`${SUPABASE_URL}/rest/v1/submissions`, {
@@ -452,11 +563,15 @@ async function sendResult(payload){
   }catch(e){ console.error(e); return false; }
 }
 
-function startTest(){
+async function startTest(){
   const name = $("candName").value.trim(), email = $("candEmail").value.trim();
   const valid = name.length>=2 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   $("candErr").hidden = valid;
   if(!valid) return;
+  $("startBtn").disabled = true;
+  const gate = await BC.begin(email);
+  $("startBtn").disabled = false;
+  if(!gate.ok){ BC.refuse(gate.reason); return; }
   candidate = {name,email};
   startedAt = Date.now();
   show("test");
@@ -553,10 +668,12 @@ function finish(){
   });
   const pct = Math.round(correct/QUESTIONS.length*100);
 
+  const fx = BC.strikes(); BC.end();
   sendResult({
     test:"aptitude",
     candidate_name:candidate.name,
     candidate_email:candidate.email,
+    fullscreen_exits:fx,
     score:pct, points:correct, total:QUESTIONS.length,
     duration_sec:Math.round((Date.now()-startedAt)/1000),
     answers:QUESTIONS.map((q,i)=>({section:q.section,question:q.prompt,response:answers[i],correct:answers[i]===q.answer}))

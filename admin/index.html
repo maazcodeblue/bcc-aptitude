@@ -95,6 +95,7 @@
         <option value="">Any result</option>
         <option value="pass">Passed</option>
         <option value="fail">Not passed</option>
+        <option value="flagged">Flagged</option>
       </select>
     </div>
     <div class="tablewrap"><table>
@@ -105,6 +106,9 @@
       </tr></thead>
       <tbody id="rows"></tbody>
     </table></div>
+
+    <h3 style="margin:30px 0 10px">Blocked emails</h3>
+    <div class="tablewrap"><table style="min-width:480px"><tbody id="blockedRows"></tbody></table></div>
   </main>
 </div>
 
@@ -161,7 +165,31 @@ async function load(){
   if(!r.ok){ $("rows").innerHTML = `<tr><td colspan="8" class="empty">Could not load data (${r.status}).</td></tr>`; return; }
   data = await r.json();
   render();
+  loadBlocked();
 }
+
+/* ---------- blocked emails ---------- */
+async function loadBlocked(){
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/blocked_emails?select=*&order=created_at.desc`, {
+    headers:{apikey:SUPABASE_KEY, Authorization:`Bearer ${token}`}
+  });
+  const el = $("blockedRows");
+  if(!r.ok){ el.innerHTML = `<tr><td class="empty">Could not load blocked emails (${r.status}). Run the blocked_emails SQL.</td></tr>`; return; }
+  const list = await r.json();
+  el.innerHTML = list.length ? list.map(b => `<tr>
+    <td>${esc(b.email)}</td><td>${esc(b.reason||"")}</td><td>${esc(fmtDate(b.created_at))}</td>
+    <td><button class="btn" data-unblock="${esc(b.email)}">Unblock</button></td></tr>`).join("")
+    : `<tr><td class="empty">No blocked emails.</td></tr>`;
+}
+$("blockedRows").addEventListener("click", async e => {
+  const b = e.target.closest("[data-unblock]"); if(!b) return;
+  if(!confirm(`Allow ${b.dataset.unblock} to attempt again?`)) return;
+  b.disabled = true;
+  await fetch(`${SUPABASE_URL}/rest/v1/blocked_emails?email=eq.${encodeURIComponent(b.dataset.unblock)}`, {
+    method:"DELETE", headers:{apikey:SUPABASE_KEY, Authorization:`Bearer ${token}`}
+  });
+  loadBlocked();
+});
 async function showApp(){
   $("login").classList.add("hidden"); $("app").classList.remove("hidden");
   await load();
@@ -173,25 +201,29 @@ function filtered(){
   return data.filter(d => {
     if(t && d.test !== t) return false;
     if(p==="pass" && !isPass(d)) return false;
-    if(p==="fail" && isPass(d)) return false;
+    if(p==="fail" && (isPass(d) || d.flagged)) return false;
+    if(p==="flagged" && !d.flagged) return false;
     if(q && !`${d.candidate_name} ${d.candidate_email} ${d.candidate_id}`.toLowerCase().includes(q)) return false;
     return true;
   });
 }
-const isPass = d => d.passed === true || (d.passed == null && d.score >= 60);
+const isPass = d => !d.flagged && (d.passed === true || (d.passed == null && d.score >= 60));
 
 function render(){
   const rows = filtered().sort((a,b)=>{
     const x=a[sortKey], y=b[sortKey];
     return (x==null?-1:y==null?1:x>y?1:x<y?-1:0)*sortDir;
   });
-  const avg = rows.length ? Math.round(rows.reduce((s,d)=>s+(d.score||0),0)/rows.length) : 0;
-  const passRate = rows.length ? Math.round(rows.filter(isPass).length/rows.length*100) : 0;
+  const scored = rows.filter(d=>!d.flagged);
+  const avg = scored.length ? Math.round(scored.reduce((s,d)=>s+(d.score||0),0)/scored.length) : 0;
+  const passRate = scored.length ? Math.round(scored.filter(isPass).length/scored.length*100) : 0;
+  const cnt = t => rows.filter(d=>d.test===t).length;
   $("stats").innerHTML = `
     <div class="stat"><b>${rows.length}</b><span>Submissions</span></div>
     <div class="stat"><b>${avg}%</b><span>Average score</span></div>
     <div class="stat"><b>${passRate}%</b><span>Pass rate (60%+)</span></div>
-    <div class="stat"><b>${rows.filter(d=>d.test==="aptitude").length} / ${rows.filter(d=>d.test==="bluecascade").length}</b><span>Aptitude / BlueCascade</span></div>`;
+    <div class="stat"><b>${cnt("aptitude")} / ${cnt("bluecascade")} / ${cnt("games")}</b><span>Aptitude / BlueCascade / Games</span></div>
+    <div class="stat"><b style="color:var(--bad)">${rows.filter(d=>d.flagged).length}</b><span>Flagged</span></div>`;
 
   if(!rows.length){ $("rows").innerHTML = `<tr><td colspan="8" class="empty">No submissions yet.</td></tr>`; return; }
   $("rows").innerHTML = rows.map(d => {
@@ -199,14 +231,14 @@ function render(){
     let html = `<tr class="row" data-id="${esc(d.id)}">
       <td>${esc(fmtDate(d.created_at))}</td><td>${esc(d.candidate_name)}</td><td>${esc(d.candidate_email)}</td>
       <td><span class="pill">${esc(d.test)}</span></td>
-      <td><b>${esc(d.score)}%</b> ${d.total!=null?`<small style="color:var(--muted)">${esc(d.points)}/${esc(d.total)}</small>`:""}</td>
-      <td class="${pass?"pass":"fail"}">${pass?"Passed":"Not passed"}</td>
+      <td>${d.score==null?"—":`<b>${esc(d.score)}%</b>`} ${d.total!=null?`<small style="color:var(--muted)">${esc(d.points)}/${esc(d.total)}</small>`:""}</td>
+      <td class="${pass?"pass":"fail"}">${d.flagged?"⚑ Flagged":pass?"Passed":"Not passed"}</td>
       <td>${d.tab_switches==null?"—":esc(d.tab_switches)}</td><td>${fmtDur(d.duration_sec)}</td></tr>`;
     if(open===d.id){
       const items = Array.isArray(d.answers) ? d.answers : [];
       const secs = (!Array.isArray(d.answers) && d.answers && typeof d.answers==="object") ? Object.entries(d.answers) : [];
       html += `<tr class="detail"><td colspan="8">
-        <small>ID: ${esc(d.candidate_id||"—")} · Invite code: ${esc(d.invite_code||"—")}</small>
+        <small>ID: ${esc(d.candidate_id||"—")} · Invite code: ${esc(d.invite_code||"—")} · Full-screen exits: ${esc(d.fullscreen_exits ?? 0)}${d.flagged?" · Ended early: exited full screen twice":""}</small>
         ${secs.length ? `<div class="ans">${secs.map(([k,v])=>`<div class="a"><span><b>${esc(k)}</b>: ${esc(v)}%</span></div>`).join("")}</div>` : ""}
         <div class="ans">${items.map((a,i)=>`<div class="a"><i class="${a.correct?"ok":"no"}">${a.correct?"✓":"✕"}</i>
           <span>${i+1}. ${esc(a.question)} <small>[${esc(a.section)}] — answer: ${esc(JSON.stringify(a.response))}</small></span></div>`).join("") || "<small>No answer detail.</small>"}</div>
@@ -228,7 +260,7 @@ $("refreshBtn").onclick = load;
 
 /* ---------- CSV ---------- */
 $("csvBtn").onclick = () => {
-  const cols = ["created_at","test","candidate_id","candidate_name","candidate_email","invite_code","score","points","total","passed","tab_switches","duration_sec"];
+  const cols = ["created_at","test","candidate_id","candidate_name","candidate_email","invite_code","score","points","total","passed","flagged","fullscreen_exits","tab_switches","duration_sec"];
   // prefix cells that start with a formula character so spreadsheets don't execute them
   const cell = v => { let s = v==null ? "" : String(v); if(/^[=+\-@\t\r]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g,'""') + '"'; };
   const csv = [cols.join(",")].concat(filtered().map(d => cols.map(c => cell(d[c])).join(","))).join("\n");
