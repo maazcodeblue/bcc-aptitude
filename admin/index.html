@@ -19,6 +19,7 @@
   .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
   @media (prefers-color-scheme:dark){.btn.primary{color:#0d1117}}
   .btn:disabled{opacity:.5;cursor:wait}
+  .btn.sm{padding:4px 10px;font-size:.76rem;border-radius:7px;font-weight:600}
 
   /* login */
   #login{min-height:100vh;display:grid;place-items:center;padding:16px}
@@ -33,7 +34,7 @@
   header{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--line);padding:12px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
   header b{font-size:1.05rem}
   header .sp{flex:1}
-  main{max-width:1200px;margin:0 auto;padding:20px}
+  main{max-width:1420px;margin:0 auto;padding:20px}
   .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
   .stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
   .stat b{display:block;font-size:1.6rem;letter-spacing:-.02em}
@@ -41,12 +42,15 @@
   .tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
   .tools input{flex:1;min-width:180px}
   .tablewrap{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow-x:auto}
-  table{width:100%;border-collapse:collapse;min-width:760px}
-  th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
-  th{background:var(--surface2);font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;cursor:pointer;user-select:none}
+  table{width:100%;border-collapse:collapse;min-width:880px}
+  th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap;font-size:13.5px}
+  th{background:var(--surface2);font-size:.76rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;cursor:pointer;user-select:none}
   tr.row{cursor:pointer}
   tr.row:hover td{background:var(--surface2)}
   tr:last-child td{border-bottom:0}
+  th:last-child,tr.row td:last-child{position:sticky;right:0;background:var(--surface);text-align:center;padding:6px 12px;box-shadow:-3px 0 8px rgba(0,0,0,.08)}
+  th:last-child{background:var(--surface2)}
+  tr.row:hover td:last-child{background:var(--surface2)}
   .pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:.78rem;font-weight:600;background:var(--accent-weak);color:var(--accent)}
   .pass{color:var(--good);font-weight:600}.fail{color:var(--bad);font-weight:600}
   .empty{padding:40px;text-align:center;color:var(--muted)}
@@ -77,6 +81,7 @@
   <header>
     <b>BCC Submissions</b>
     <span class="sp"></span>
+    <button class="btn primary" id="sendAllBtn">Send Results to All</button>
     <button class="btn" id="refreshBtn">Refresh</button>
     <button class="btn" id="csvBtn">Export CSV</button>
     <button class="btn" id="logoutBtn">Sign out</button>
@@ -102,7 +107,8 @@
       <thead><tr>
         <th data-k="created_at">Date</th><th data-k="candidate_name">Name</th><th data-k="candidate_email">Email</th>
         <th data-k="test">Test</th><th data-k="score">Score</th><th data-k="passed">Result</th>
-        <th data-k="tab_switches">Tab switches</th><th data-k="duration_sec">Time</th>
+        <th data-k="tab_switches" title="Tab switches">Switches</th><th data-k="duration_sec">Time</th>
+        <th>Send Result</th>
       </tr></thead>
       <tbody id="rows"></tbody>
     </table></div>
@@ -225,7 +231,7 @@ function render(){
     <div class="stat"><b>${cnt("aptitude")} / ${cnt("bluecascade")} / ${cnt("games")}</b><span>Aptitude / BlueCascade / Games</span></div>
     <div class="stat"><b style="color:var(--bad)">${rows.filter(d=>d.flagged).length}</b><span>Flagged</span></div>`;
 
-  if(!rows.length){ $("rows").innerHTML = `<tr><td colspan="8" class="empty">No submissions yet.</td></tr>`; return; }
+  if(!rows.length){ $("rows").innerHTML = `<tr><td colspan="9" class="empty">No submissions yet.</td></tr>`; return; }
   $("rows").innerHTML = rows.map(d => {
     const pass = isPass(d);
     let html = `<tr class="row" data-id="${esc(d.id)}">
@@ -233,11 +239,12 @@ function render(){
       <td><span class="pill">${esc(d.test)}</span></td>
       <td>${d.score==null?"—":`<b>${esc(d.score)}%</b>`} ${d.total!=null?`<small style="color:var(--muted)">${esc(d.points)}/${esc(d.total)}</small>`:""}</td>
       <td class="${pass?"pass":"fail"}">${d.flagged?"⚑ Flagged":pass?"Passed":"Not passed"}</td>
-      <td>${d.tab_switches==null?"—":esc(d.tab_switches)}</td><td>${fmtDur(d.duration_sec)}</td></tr>`;
+      <td>${d.tab_switches==null?"—":esc(d.tab_switches)}</td><td>${fmtDur(d.duration_sec)}</td>
+      <td><button class="btn sm" data-send="${esc(d.id)}" style="background:var(--accent-weak);color:var(--accent);border-color:var(--accent);white-space:nowrap">Send Result</button></td></tr>`;
     if(open===d.id){
       const items = Array.isArray(d.answers) ? d.answers : [];
       const secs = (!Array.isArray(d.answers) && d.answers && typeof d.answers==="object") ? Object.entries(d.answers) : [];
-      html += `<tr class="detail"><td colspan="8">
+      html += `<tr class="detail"><td colspan="9">
         <small>ID: ${esc(d.candidate_id||"—")} · Invite code: ${esc(d.invite_code||"—")} · Full-screen exits: ${esc(d.fullscreen_exits ?? 0)}${d.flagged?" · Ended early: exited full screen twice":""}</small>
         ${secs.length ? `<div class="ans">${secs.map(([k,v])=>`<div class="a"><span><b>${esc(k)}</b>: ${esc(v)}%</span></div>`).join("")}</div>` : ""}
         <div class="ans">${items.map((a,i)=>`<div class="a"><i class="${a.correct?"ok":"no"}">${a.correct?"✓":"✕"}</i>
@@ -249,6 +256,12 @@ function render(){
 }
 
 $("rows").addEventListener("click", e => {
+  const sendBtn = e.target.closest("[data-send]");
+  if (sendBtn) {
+    const sub = data.find(x => x.id === sendBtn.dataset.send);
+    if (sub) sendSingleResult(sub, sendBtn);
+    return;
+  }
   const tr = e.target.closest("tr.row"); if(!tr) return;
   open = open === tr.dataset.id ? null : tr.dataset.id; render();
 });
@@ -268,6 +281,59 @@ $("csvBtn").onclick = () => {
   a.href = URL.createObjectURL(new Blob([csv], {type:"text/csv"}));
   a.download = "submissions.csv"; a.click(); URL.revokeObjectURL(a.href);
 };
+
+/* ---------- email sending ---------- */
+const MAILER_API = window.MAILER_API_URL || (location.protocol === "https:" ? "/api" : "http://localhost:3000/api");
+
+async function sendSingleResult(sub, btn) {
+  if (!sub.candidate_email) return alert("This candidate has no email address.");
+  if (!confirm(`Send assessment result email to ${sub.candidate_email}?`)) return;
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = "Sending…";
+  try {
+    const r = await fetch(`${MAILER_API}/send-result`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ submission: sub })
+    });
+    const res = await r.json();
+    if (!r.ok) throw new Error(res.error || "Sending failed");
+    btn.textContent = "Sent ✓";
+    btn.style.color = "var(--good)";
+    btn.style.borderColor = "var(--good)";
+  } catch (err) {
+    alert(`Could not send result: ${err.message}\n(Make sure 'node send_result.js' is running)`);
+    btn.disabled = false; btn.textContent = orig;
+  }
+}
+
+async function sendAllResults() {
+  const list = filtered().filter(d => d.candidate_email && d.score != null);
+  if (!list.length) return alert("No scored submissions with email addresses found.");
+  if (!confirm(`Send results to all ${list.length} candidate(s)?`)) return;
+
+  const btn = $("sendAllBtn");
+  const orig = btn.textContent;
+  btn.disabled = true;
+  let sent = 0;
+
+  for (let i = 0; i < list.length; i++) {
+    btn.textContent = `Sending (${i + 1}/${list.length})…`;
+    try {
+      const r = await fetch(`${MAILER_API}/send-result`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ submission: list[i] })
+      });
+      if (r.ok) sent++;
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  btn.textContent = `Sent (${sent}/${list.length}) ✓`;
+  setTimeout(() => { btn.disabled = false; btn.textContent = orig; }, 4000);
+}
+
+$("sendAllBtn").onclick = sendAllResults;
 
 if(token) showApp();
 </script>
