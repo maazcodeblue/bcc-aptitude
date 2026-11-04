@@ -31,9 +31,13 @@ function normalizeSubmission(raw = {}) {
              : raw.test === "bluecascade" ? "BlueCascade Assessment"
              : raw.test === "games" ? "Cognitive Games Assessment"
              : (raw.test || "Assessment");
+  const isGames = raw.test === "games";
   const score = raw.score ?? 0;
   const points = raw.points ?? 0;
-  const total = raw.total ?? 12;
+  const total = raw.total ?? (isGames ? 0 : 12);
+  const flagged = !!raw.flagged;
+  const fullscreenExits = raw.fullscreen_exits ?? 0;
+  const tabSwitches = raw.tab_switches ?? 0;
   const durationSec = raw.duration_sec ?? raw.durationSec ?? 0;
   const submissionId = String(raw.id || raw.submissionId || "assessment").slice(0, 8);
   const date = raw.created_at
@@ -109,8 +113,8 @@ function normalizeSubmission(raw = {}) {
     });
   }
 
-  // Fallback default sections if answers detail isn't available
-  if (!sections.length) {
+  // Placeholder sections only for question-based tests; never for games
+  if (!sections.length && !isGames) {
     sections = [
       { name: "Numerical Reasoning", icon: "📊", correct: 2, total: 3, ratioLabel: "2 / 3", pct: 67, color: "#0d9488", bg: "#ccfbf1" },
       { name: "Verbal Reasoning", icon: "📝", correct: 2, total: 3, ratioLabel: "2 / 3", pct: 67, color: "#0d9488", bg: "#ccfbf1" },
@@ -119,7 +123,7 @@ function normalizeSubmission(raw = {}) {
     ];
   }
 
-  return { name, email, test, score, points, total, durationSec, submissionId, date, sections };
+  return { name, email, test, isGames, score, points, total, durationSec, submissionId, date, sections, flagged, fullscreenExits, tabSwitches };
 }
 
 function buildEmailHtml(raw) {
@@ -127,6 +131,20 @@ function buildEmailHtml(raw) {
   const duration = formatDuration(data.durationSec);
   const avgSecPerQ = data.total ? Math.round(data.durationSec / data.total) : 0;
   const initials = getInitials(data.name);
+
+  const heroLine = data.isGames
+    ? `${data.sections.length} Games Completed`
+    : `${data.points} of ${data.total} Questions Correct`;
+  const timeSub = data.isGames ? "Total session time" : `~${avgSecPerQ}s / question`;
+  const accuracyLabel = data.isGames ? "Overall Score" : "Accuracy";
+  const accuracySub = data.isGames ? "Average across games" : `${data.points} / ${data.total} correct`;
+  const clean = !data.flagged && !data.fullscreenExits && !data.tabSwitches;
+  const integrityMain = data.flagged ? "Flagged &#9888;" : clean ? "100% Clean &#10004;" : "Minor Flags &#9888;";
+  const integrityColor = data.flagged ? "#dc2626" : clean ? "#16a34a" : "#d97706";
+  const integritySub = data.flagged
+    ? "Session ended early"
+    : `${data.fullscreenExits} fullscreen exit(s) &bull; ${data.tabSwitches} tab switch(es)`;
+  const sectionTitle = data.isGames ? "Game-by-Game Performance" : "Section-by-Section Performance";
 
   const sectionCards = data.sections.map(s => `
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:10px;">
@@ -243,7 +261,7 @@ function buildEmailHtml(raw) {
                         &#9889; Performance Record
                       </span>
                       <div style="font-size:17px;font-weight:800;color:#0f172a;margin-top:6px;">
-                        ${data.points} of ${data.total} Questions Correct
+                        ${heroLine}
                       </div>
                       <div style="font-size:12px;color:#64748b;line-height:1.45;margin-top:4px;">
                         Assessment results processed and logged to candidate profile.
@@ -272,24 +290,24 @@ function buildEmailHtml(raw) {
               <td style="width:33.33%;padding:14px 10px;vertical-align:middle;text-align:center;">
                 <div style="font-size:10.5px;color:#64748b;text-transform:uppercase;font-weight:700;">Time Elapsed</div>
                 <div style="font-size:16px;font-weight:800;color:#0f172a;margin-top:3px;font-family:monospace;">${duration}</div>
-                <div style="font-size:11px;color:#94a3b8;margin-top:2px;">~${avgSecPerQ}s / question</div>
+                <div style="font-size:11px;color:#94a3b8;margin-top:2px;">${timeSub}</div>
               </td>
               <td style="width:33.33%;padding:14px 10px;vertical-align:middle;text-align:center;border-left:1px solid #edf2f7;border-right:1px solid #edf2f7;">
-                <div style="font-size:10.5px;color:#64748b;text-transform:uppercase;font-weight:700;">Accuracy</div>
+                <div style="font-size:10.5px;color:#64748b;text-transform:uppercase;font-weight:700;">${accuracyLabel}</div>
                 <div style="font-size:16px;font-weight:800;color:#0d9488;margin-top:3px;">${data.score}%</div>
-                <div style="font-size:11px;color:#94a3b8;margin-top:2px;">${data.points} / ${data.total} correct</div>
+                <div style="font-size:11px;color:#94a3b8;margin-top:2px;">${accuracySub}</div>
               </td>
               <td style="width:33.33%;padding:14px 10px;vertical-align:middle;text-align:center;">
                 <div style="font-size:10.5px;color:#64748b;text-transform:uppercase;font-weight:700;">Integrity</div>
-                <div style="font-size:15px;font-weight:800;color:#16a34a;margin-top:3px;">100% Clean &#10004;</div>
-                <div style="font-size:11px;color:#94a3b8;margin-top:2px;">Verified Session</div>
+                <div style="font-size:15px;font-weight:800;color:${integrityColor};margin-top:3px;">${integrityMain}</div>
+                <div style="font-size:11px;color:#94a3b8;margin-top:2px;">${integritySub}</div>
               </td>
             </tr>
           </table>
 
           <!-- Section Breakdown Title -->
           <div style="font-size:12.5px;font-weight:800;color:#0f172a;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:12px;text-align:left;">
-            Section-by-Section Performance
+            ${sectionTitle}
           </div>
 
           <!-- Section Cards -->
@@ -306,7 +324,7 @@ function buildEmailHtml(raw) {
           <!-- Telemetry Footer Stamp -->
           <div style="margin-top:14px;border:1px dashed #cbd5e1;border-radius:8px;padding:8px 12px;text-align:center;background:#fafbfc;">
             <div style="font-size:11px;color:#64748b;">
-              🔒 <strong>Anti-Cheat Telemetry:</strong> Verified Session &bull; Date: <strong>${data.date}</strong>
+              🔒 <strong>Anti-Cheat Telemetry:</strong> ${data.flagged ? "Flagged Session" : "Verified Session"} &bull; Date: <strong>${data.date}</strong>
             </div>
           </div>
 
